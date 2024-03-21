@@ -1,12 +1,14 @@
-package dbdata
+package db
 
 import (
+	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func SetupPSQL() *DB {
-	dsn := "host=localhost user=postgres password=1234 dbname=bungalow port=5432 sslmode=disable"
+	dsn := "host=localhost user=bungalow_user password=1234 dbname=bungalow port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err.Error())
@@ -48,6 +50,20 @@ func (db *DB) GetReservationsById(personId int) *[]Reservation {
 	return &reservations
 }
 
-// func (db *DB) GetReservationsByMonth(time.Month) *[]Reservation {
-// 	var reservations []Reservation
-// }
+func (db *DB) GetReservationsByMonth(year int, month time.Month) *[]Reservation {
+	var reservations []Reservation
+	startOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
+	endOfMonth := startOfMonth.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	db.Where("starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?", startOfMonth, endOfMonth, startOfMonth, endOfMonth).Find(&reservations)
+	return &reservations
+}
+
+func (db *DB) GetPersonByReservationDate(year int, month time.Month, day int) *Person {
+	var person Person
+	date := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
+	db.Limit(1).Joins("inner join reservations on reservations.person_id = people.id").Preload("Reservations", "reservations.starting_date <= ? AND reservations.ending_date > ?", date, date).Where("reservations.starting_date <= ? AND reservations.ending_date > ?", date, date).Find(&person)
+	if person.ID == 0 {
+		return nil
+	}
+	return &person
+}

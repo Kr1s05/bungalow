@@ -1,4 +1,4 @@
-package dbdata
+package db
 
 import (
 	"time"
@@ -21,15 +21,7 @@ type Person struct {
 
 type Reservation struct {
 	gorm.Model
-	PersonId     uint
-	StartingDate time.Time
-	EndingDate   time.Time
-}
-
-func parseDate(dateStr string) time.Time {
-	date, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		panic(err.Error())
-	}
-	return date
+	PersonId     uint      `gorm:"index"`
+	StartingDate time.Time `gorm:"index"`
+	EndingDate   time.Time `gorm:"index"`
 }

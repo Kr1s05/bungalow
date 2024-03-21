@@ -1,15 +1,16 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/Kr1s05/reservations/internal/dbdata"
+	"github.com/Kr1s05/reservations/db"
 )
 
 func main() {
-	db := dbdata.SetupPSQL()
-	people := db.GetFilteredPeople(&dbdata.Person{Email: "mail"}, false)
-	for _, p := range *people {
-		fmt.Printf("%+v\n", p)
-	}
+	db.SetupPSQL()
+	// reservations := []db.Reservation{
+	// 	{PersonId: 1, StartingDate: time.Date(2024, time.July, 18, 0, 0, 0, 0, time.UTC), EndingDate: time.Date(2024, time.August, 8, 0, 0, 0, 0, time.UTC)},
+	// 	{PersonId: 1, StartingDate: time.Date(2024, time.June, 18, 0, 0, 0, 0, time.UTC), EndingDate: time.Date(2024, time.July, 1, 0, 0, 0, 0, time.UTC)},
+	// }
+	// conn.Create(&reservations)
+	// person := conn.GetPersonByReservationDate(2024, time.July, 10)
+	// fmt.Printf("%+v", person)
 }
