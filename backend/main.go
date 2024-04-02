@@ -1,16 +1,36 @@
 package main
 
 import (
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/Kr1s05/reservations/db"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	db.SetupPSQL()
-	// reservations := []db.Reservation{
-	// 	{PersonId: 1, StartingDate: time.Date(2024, time.July, 18, 0, 0, 0, 0, time.UTC), EndingDate: time.Date(2024, time.August, 8, 0, 0, 0, 0, time.UTC)},
-	// 	{PersonId: 1, StartingDate: time.Date(2024, time.June, 18, 0, 0, 0, 0, time.UTC), EndingDate: time.Date(2024, time.July, 1, 0, 0, 0, 0, time.UTC)},
-	// }
-	// conn.Create(&reservations)
-	// person := conn.GetPersonByReservationDate(2024, time.July, 10)
-	// fmt.Printf("%+v", person)
+	database := db.SetupPSQL()
+	router := gin.Default()
+
+	router.GET("/reservations/:year/:month", func(c *gin.Context) {
+		month, err := strconv.Atoi(c.Param("month"))
+		if err != nil {
+			c.AsciiJSON(http.StatusBadRequest, gin.H{"error": "Invalid month path parameter."})
+			return
+		}
+		if month < 1 || month > 12 {
+			c.AsciiJSON(http.StatusBadRequest, gin.H{"error": "Invalid month path parameter."})
+			return
+		}
+		year, err := strconv.Atoi(c.Param("year"))
+		if err != nil {
+			c.AsciiJSON(http.StatusBadRequest, gin.H{"error": "Invalid year path parameter."})
+			return
+		}
+		reservations := database.GetReservationsByMonth(year, time.Month(month))
+		result := ReservationList{Month: month, Reservations: convertSliceToApiReservation(reservations)}
+		c.AsciiJSON(http.StatusOK, result)
+	})
+	router.Run("localhost:8080")
 }

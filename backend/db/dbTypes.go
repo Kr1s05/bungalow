@@ -10,18 +10,16 @@ type DB struct {
 	gorm.DB
 }
 
-type Person struct {
-	gorm.Model
-	FirstName    string
-	LastName     string
-	Email        string
-	PhoneNumber  string
-	Reservations []Reservation `gorm:"foreignKey:PersonId"`
-}
-
 type Reservation struct {
 	gorm.Model
-	PersonId     uint      `gorm:"index"`
+	Person       `gorm:"embedded"`
 	StartingDate time.Time `gorm:"index"`
 	EndingDate   time.Time `gorm:"index"`
+}
+
+type Person struct {
+	FirstName   string
+	LastName    string
+	Email       string
+	PhoneNumber string
 }

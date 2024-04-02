@@ -13,41 +13,31 @@ func SetupPSQL() *DB {
 	if err != nil {
 		panic(err.Error())
 	}
-	err = db.AutoMigrate(&Person{}, &Reservation{})
+	err = db.AutoMigrate(&Reservation{})
 	if err != nil {
 		panic(err.Error())
 	}
 	return &DB{DB: *db}
 }
 
-func (db *DB) GetPersonById(id int, preload bool) *Person {
-	var p Person
-	if preload {
-		db.Preload("Reservations").Where("id = ?", id).First(&p)
-	} else {
-		db.Where("id = ?", id).First(&p)
-	}
-	return &p
-}
-
-func (db *DB) GetFilteredPeople(params *Person, preload bool) *[]Person {
-	var people []Person
+func (db *DB) GetReservationsByPeople(params *Person, preload bool) *[]Reservation {
+	var reservations []Reservation
 	params.FirstName = "%" + params.FirstName + "%"
 	params.LastName = "%" + params.LastName + "%"
 	params.PhoneNumber = "%" + params.PhoneNumber + "%"
 	params.Email = "%" + params.Email + "%"
 	if preload {
-		db.Preload("Reservations").Where("first_name like ? AND last_name like ? AND phone_number like ? AND email like ?", params.FirstName, params.LastName, params.PhoneNumber, params.Email).Find(&people)
+		db.Where("first_name like ? AND last_name like ? AND phone_number like ? AND email like ?", params.FirstName, params.LastName, params.PhoneNumber, params.Email).Find(&reservations)
 	} else {
-		db.Where("first_name like ? AND last_name like ? AND phone_number like ? AND email like ?", params.FirstName, params.LastName, params.PhoneNumber, params.Email).Find(&people)
+		db.Where("first_name like ? AND last_name like ? AND phone_number like ? AND email like ?", params.FirstName, params.LastName, params.PhoneNumber, params.Email).Find(&reservations)
 	}
-	return &people
+	return &reservations
 }
 
-func (db *DB) GetReservationsById(personId int) *[]Reservation {
-	var reservations []Reservation
-	db.Where("person_id = ?", personId).Find(&reservations)
-	return &reservations
+func (db *DB) GetReservationById(id int) *Reservation {
+	var reservation Reservation
+	db.Find(&reservation, id)
+	return &reservation
 }
 
 func (db *DB) GetReservationsByMonth(year int, month time.Month) *[]Reservation {
@@ -58,12 +48,12 @@ func (db *DB) GetReservationsByMonth(year int, month time.Month) *[]Reservation 
 	return &reservations
 }
 
-func (db *DB) GetPersonByReservationDate(year int, month time.Month, day int) *Person {
-	var person Person
+func (db *DB) GetReservationByDate(year int, month time.Month, day int) *Reservation {
+	var reservation Reservation
 	date := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
-	db.Limit(1).Joins("inner join reservations on reservations.person_id = people.id").Preload("Reservations", "reservations.starting_date <= ? AND reservations.ending_date > ?", date, date).Where("reservations.starting_date <= ? AND reservations.ending_date > ?", date, date).Find(&person)
-	if person.ID == 0 {
+	db.Limit(1).Where("starting_date <= ? AND ending_date > ?", date, date).Find(&reservation)
+	if reservation.ID == 0 {
 		return nil
 	}
-	return &person
+	return &reservation
 }

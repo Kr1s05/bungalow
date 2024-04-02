@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
 import { DateRange } from "react-day-picker";
 import { closestTo, isAfter, isBefore, isSameDay } from "date-fns";
@@ -10,7 +10,7 @@ export default function ReservationCallender() {
     currentYear: number;
     selectedRange: DateRange | undefined;
   }>({
-    currentMonth: new Date(),
+    currentMonth: new Date(2024, 3, 1),
     currentYear: new Date().getFullYear(),
     selectedRange: undefined,
   });
@@ -50,11 +50,15 @@ export default function ReservationCallender() {
     return disable;
   };
 
+  useEffect(() => {
+    console.log(state);
+  }, [state]);
+
   return (
     <>
       <Calendar
         className="h-[400px]"
-        showOutsideDays
+        showOutsideDays={false}
         ISOWeek
         mode="range"
         onMonthChange={handleMonthChange}
@@ -62,6 +66,7 @@ export default function ReservationCallender() {
         selected={state.selectedRange}
         onSelect={handleSelectionChange}
         disabled={filterDisabledDates}
+        numberOfMonths={6}
       />
     </>
   );
