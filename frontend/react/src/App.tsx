@@ -1,10 +1,14 @@
-import ReservationCallender from "./components/ReservationCallender";
+import { Route, Routes } from "react-router-dom";
+import SiteLayout from "./layouts/SiteLayout";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
-    <div className="flex items-center h-100 justify-center h-screen">
-      <ReservationCallender />
-    </div>
+    <Routes>
+      <Route path="/" Component={SiteLayout}>
+        <Route path="/" Component={HomePage} />
+      </Route>
+    </Routes>
   );
 }
 

@@ -3,8 +3,8 @@ import { Calendar } from "./ui/calendar";
 import { DateRange } from "react-day-picker";
 import { closestTo, isAfter, isBefore, isSameDay } from "date-fns";
 
-export default function ReservationCallender() {
-  const disabled = [new Date(), new Date(2024, 2, 6)];
+export default function HomeCalendar() {
+  const disabled: Array<Date> = [];
   const [state, setState] = useState<{
     currentMonth: Date;
     currentYear: number;
@@ -57,7 +57,7 @@ export default function ReservationCallender() {
   return (
     <>
       <Calendar
-        className="h-[400px]"
+        className="h-fit w-fit"
         showOutsideDays={false}
         ISOWeek
         mode="range"
@@ -67,6 +67,14 @@ export default function ReservationCallender() {
         onSelect={handleSelectionChange}
         disabled={filterDisabledDates}
         numberOfMonths={6}
+        classNames={{
+          month: "space-y-4",
+          months: "grid gap-6 grid-rows-2 grid-cols-3",
+          nav_button_next:
+            "absolute end-0 hover:bg-primary hover:text-secondary",
+          nav_button_previous:
+            "absolute start-0 hover:bg-primary hover:text-secondary",
+        }}
       />
     </>
   );
