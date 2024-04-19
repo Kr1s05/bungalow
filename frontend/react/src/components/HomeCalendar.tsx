@@ -35,7 +35,7 @@ export default function HomeCalendar() {
         disabled={filterDisabledDates}
         numberOfMonths={6}
         classNames={{
-          month: "space-y-4 border rounded-3xl p-4 h-[355px]",
+          month: "space-y-4 border rounded-3xl p-4 h-[395px]",
           months: "grid gap-6 grid-rows-2 grid-cols-3",
           nav_button_next:
             "absolute end-0 hover:bg-primary hover:text-secondary",

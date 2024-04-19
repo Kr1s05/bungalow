@@ -32,5 +32,9 @@ func main() {
 		result := ReservationList{Month: month, Reservations: convertSliceToApiReservation(reservations)}
 		c.AsciiJSON(http.StatusOK, result)
 	})
+
+	router.GET("/reservation/search", func(c *gin.Context) {
+
+	})
 	router.Run("localhost:8080")
 }

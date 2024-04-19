@@ -57,3 +57,10 @@ func (db *DB) GetReservationByDate(year int, month time.Month, day int) *Reserva
 	}
 	return &reservation
 }
+
+func (db *DB) GetReservationsBySearchQuery(query string) *[]Reservation {
+	var reservations []Reservation
+	db.Where("first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone_number LIKE",
+		"%"+query+"%", "%"+query+"%", "%"+query+"%", "%"+query+"%").Find(&reservations)
+	return &reservations
+}
