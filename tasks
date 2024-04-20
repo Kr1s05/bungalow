@@ -1,0 +1,29 @@
+frontend:
+    search page:
+        - debounce search bar input
+        - make the result list component
+        - write api functions
+        - make a get by month function
+        - put moth and year selection on page
+    add page:
+        - make a form for adding reservations
+        - connect to backend
+    calendar page:
+        - add a reservation info and manage component
+        - delete/confirm/edit function
+        - write api functions
+        - display the component when clicking
+        - display info when hovering
+backend:
+    searching:
+        - create wild card db query with lists to work with search bar keyword list
+        - create api endpoint
+        - create api endpoint to get reservations for month
+    adding:
+        - create insert db queries
+        - create endpoint
+    editing:
+        - create update & delete db queries
+        - create endpoints
+authentication:
+    - add authentication to backend and entry page for frontend
