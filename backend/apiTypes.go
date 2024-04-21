@@ -13,9 +13,11 @@ type ApiReservation struct {
 	db.Person
 }
 
-type ReservationList struct {
-	Month        int
-	Reservations []ApiReservation
+type ReservationList []ApiReservation
+
+type SearchKeywords struct {
+	Word       string
+	Categories []string
 }
 
 func convertToApiReservation(r *db.Reservation) ApiReservation {
@@ -33,4 +35,21 @@ func convertSliceToApiReservation(r *[]db.Reservation) []ApiReservation {
 		reservations[i] = convertToApiReservation(&reservation)
 	}
 	return reservations
+}
+
+func convertRequestKeywordsToDbKeywords(w *[]SearchKeywords) *db.Keywords {
+	var result db.Keywords
+	for _, keyword := range *w {
+		for _, category := range keyword.Categories {
+			switch category {
+			case "name":
+				result.Name = append(result.Name, keyword.Word)
+			case "email":
+				result.Email = append(result.Email, keyword.Word)
+			case "phone":
+				result.Phone = append(result.Phone, keyword.Word)
+			}
+		}
+	}
+	return &result
 }

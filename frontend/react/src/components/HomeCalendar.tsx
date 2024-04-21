@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
+import { getReservationsForMultipleMonths } from "@/api/reservationsApi";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function HomeCalendar() {
-  const disabled: Array<Date> = [];
   const [state, setState] = useState<{
     currentMonth: Date;
     currentYear: number;
@@ -10,6 +11,33 @@ export default function HomeCalendar() {
     currentMonth: new Date(2024, 3, 1),
     currentYear: new Date().getFullYear(),
   });
+
+  const { data, isError, isLoading } = useQuery({
+    queryKey: ["reservations"],
+    queryFn: async () => {
+      return await getReservationsForMultipleMonths(
+        state.currentYear,
+        state.currentMonth.getMonth() + 1,
+        6
+      );
+    },
+  });
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["reservations"] });
+  }, [state.currentMonth, queryClient]);
+
+  if (isError) {
+    return (
+      <p className="text-center text-xl">{"Error connecting to backend."}</p>
+    );
+  }
+
+  if (isLoading) {
+    return <p className="text-center text-xl">{"Loading..."}</p>;
+  }
 
   const handleMonthChange = (month: Date) => {
     setState((prevState) => ({

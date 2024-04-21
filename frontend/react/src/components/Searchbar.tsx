@@ -19,7 +19,7 @@ export default function Searchbar(props: { ClassName?: string }) {
     const keywords = words
       .filter((word) => word != "" && word)
       .map(getCategory);
-    console.log(keywords);
+    console.log(JSON.stringify(keywords));
     setState((prevState) => ({ ...prevState, search, keywords }));
   };
   const getCategory = (word: string): Keyword => {

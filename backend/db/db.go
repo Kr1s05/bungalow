@@ -1,6 +1,7 @@
 package db
 
 import (
+	"strings"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -18,6 +19,12 @@ func SetupPSQL() *DB {
 		panic(err.Error())
 	}
 	return &DB{DB: *db}
+}
+
+func (db *DB) GetAllReservations() *[]Reservation {
+	var reservations []Reservation
+	db.Find(&reservations)
+	return &reservations
 }
 
 func (db *DB) GetReservationsByPeople(params *Person, preload bool) *[]Reservation {
@@ -44,7 +51,15 @@ func (db *DB) GetReservationsByMonth(year int, month time.Month) *[]Reservation 
 	var reservations []Reservation
 	startOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
 	endOfMonth := startOfMonth.AddDate(0, 1, 0).Add(-time.Nanosecond)
-	db.Where("starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?", startOfMonth, endOfMonth, startOfMonth, endOfMonth).Find(&reservations)
+	db.Where("starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?", startOfMonth, endOfMonth, startOfMonth, endOfMonth).Order("starting_date ASC").Find(&reservations)
+	return &reservations
+}
+
+func (db *DB) GetReservationsForPeriod(year int, month time.Month, length int) *[]Reservation {
+	var reservations []Reservation
+	startOfPeriod := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
+	endOfPeriod := startOfPeriod.AddDate(0, length, 0).Add(-time.Nanosecond)
+	db.Where("starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?", startOfPeriod, endOfPeriod, startOfPeriod, endOfPeriod).Order("starting_date ASC").Find(&reservations)
 	return &reservations
 }
 
@@ -58,9 +73,25 @@ func (db *DB) GetReservationByDate(year int, month time.Month, day int) *Reserva
 	return &reservation
 }
 
-func (db *DB) GetReservationsBySearchQuery(query string) *[]Reservation {
+func (db *DB) GetReservationsBySearchQuery(query *Keywords) *[]Reservation {
+	var where string
 	var reservations []Reservation
-	db.Where("first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone_number LIKE",
-		"%"+query+"%", "%"+query+"%", "%"+query+"%", "%"+query+"%").Find(&reservations)
+	if len(query.Name) > 0 {
+		where += "( LOWER(first_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%')"
+		if len(query.Name) > 1 {
+			where += " AND "
+		} else {
+			where += " OR "
+		}
+		where += "LOWER(last_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%') )"
+	}
+	if len(query.Email) > 0 {
+		where += " OR email SIMILAR TO '%(" + strings.Join(query.Email, "|") + ")%'"
+	}
+	if len(query.Phone) > 0 {
+		where += " AND phone_number SIMILAR TO '%(" + strings.Join(query.Phone, "|") + ")%')"
+	}
+
+	db.Debug().Where(where).Find(&reservations)
 	return &reservations
 }

@@ -16,8 +16,6 @@ frontend:
         - display info when hovering
 backend:
     searching:
-        - create wild card db query with lists to work with search bar keyword list
-        - create api endpoint
         - create api endpoint to get reservations for month
     adding:
         - create insert db queries

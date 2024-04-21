@@ -23,3 +23,9 @@ type Person struct {
 	Email       string
 	PhoneNumber string
 }
+
+type Keywords struct {
+	Name  []string
+	Email []string
+	Phone []string
+}
