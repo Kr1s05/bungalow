@@ -1,3 +1,0 @@
-type Reservation = {
-  ID: number;
-};

@@ -55,7 +55,7 @@ type ApiReservationList = Array<ApiReservation>;
 
 type ReservationList = Array<Reservation>;
 
-type Reservation = {
+export type Reservation = {
   ID: number;
   StartingDate: Date;
   EndingDate: Date;
