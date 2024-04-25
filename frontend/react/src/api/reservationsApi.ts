@@ -38,6 +38,8 @@ function ApiReservationToReservation(r: ApiReservation): Reservation {
     PhoneNumber: r.PhoneNumber,
     StartingDate: new Date(r.StartingDate),
     EndingDate: new Date(r.EndingDate),
+    Price: r.Price,
+    Note: r.Note,
   };
 }
 
@@ -49,6 +51,8 @@ type ApiReservation = {
   LastName: string;
   Email: string;
   PhoneNumber: string;
+  Price: number;
+  Note: string;
 };
 
 type ApiReservationList = Array<ApiReservation>;
@@ -63,4 +67,6 @@ export type Reservation = {
   LastName: string;
   Email: string;
   PhoneNumber: string;
+  Price: number;
+  Note: string;
 };

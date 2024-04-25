@@ -25,3 +25,7 @@ backend:
         - create endpoints
 authentication:
     - add authentication to backend and entry page for frontend
+
+
+update code to reflect change in db model
+    added note string and price float to reservation

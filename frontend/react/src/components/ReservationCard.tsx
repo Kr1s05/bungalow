@@ -28,17 +28,21 @@ export default function ReservationCard(
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 ">
-          <span>Starting Date:</span>
+          <span>Starting Date: </span>
           <span>{reservation.StartingDate.toLocaleDateString()}</span>
-          <span>Ending Date:</span>
+          <span>Ending Date: </span>
           <span>{reservation.EndingDate.toLocaleDateString()}</span>
-          <span>Length of stay:</span>
+          <span>Length of stay: </span>
           <span>
             {differenceInCalendarDays(
               reservation.EndingDate,
               reservation.StartingDate
             )}
           </span>
+          <span>Price: </span>
+          <span>{reservation.Price}</span>
+          <span>Note: </span>
+          <span>{reservation.Note}</span>
         </div>
       </CardContent>
       <CardFooter className="flex flex-row justify-between">

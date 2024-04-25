@@ -80,5 +80,42 @@ func main() {
 		reservations := database.GetReservationsBySearchQuery(keywords)
 		c.AsciiJSON(http.StatusOK, reservations)
 	})
+
+	router.POST("/reservations/add", func(c *gin.Context) {
+		var reservation db.Reservation
+		c.Bind(&reservation)
+		err := database.CreateReservation(&reservation)
+		if err != nil {
+			c.AsciiJSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		c.Status(http.StatusOK)
+	})
+
+	router.POST("/reservations/update", func(c *gin.Context) {
+		var reservation db.Reservation
+		c.Bind(&reservation)
+		status := database.UpdateReservation(&reservation)
+		if status {
+			c.Status(http.StatusOK)
+		} else {
+			c.Status(http.StatusNotModified)
+		}
+	})
+
+	router.DELETE("/reservations/delete/:id", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.AsciiJSON(http.StatusBadRequest, gin.H{"error": "Invalid id path parameter."})
+			return
+		}
+		status := database.DeleteReservation(id)
+		if status {
+			c.Status(http.StatusOK)
+		} else {
+			c.Status(http.StatusNotModified)
+		}
+	})
+
 	router.Run("localhost:8080")
 }

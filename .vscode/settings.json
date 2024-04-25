@@ -1,0 +1,6 @@
+{
+  "cSpell.words": ["gonic"],
+  "yaml.schemas": {
+    "https://json.schemastore.org/phraseapp.json": "file:///home/kris/Documents/bungalow/tasks"
+  }
+}

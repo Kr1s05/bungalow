@@ -10,6 +10,8 @@ type ApiReservation struct {
 	ID           uint
 	StartingDate time.Time
 	EndingDate   time.Time
+	Price        float32
+	Note         string
 	db.Person
 }
 
@@ -26,6 +28,8 @@ func convertToApiReservation(r *db.Reservation) ApiReservation {
 	reservation.StartingDate = r.StartingDate
 	reservation.EndingDate = r.EndingDate
 	reservation.Person = r.Person
+	reservation.Note = r.Note
+	reservation.Price = r.Price
 	return reservation
 }
 

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"reflect"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ func SetupPSQL() *DB {
 	}
 	return &DB{DB: *db}
 }
+
+//select
 
 func (db *DB) GetAllReservations() *[]Reservation {
 	var reservations []Reservation
@@ -94,4 +97,42 @@ func (db *DB) GetReservationsBySearchQuery(query *Keywords) *[]Reservation {
 
 	db.Debug().Where(where).Find(&reservations)
 	return &reservations
+}
+
+// create
+func (db *DB) CreateReservation(reservation *Reservation) error {
+	result := db.Create(reservation)
+	return result.Error
+}
+
+// update
+func (db *DB) UpdateReservation(reservation *Reservation) bool {
+	var oldReservation Reservation
+	db.First(&oldReservation, reservation.ID)
+	if oldReservation.ID != reservation.ID {
+		return false
+	}
+
+	oldValue := reflect.ValueOf(&oldReservation).Elem()
+	newValue := reflect.ValueOf(reservation).Elem()
+
+	for i := 0; i < oldValue.NumField(); i++ {
+		oldField := oldValue.Field(i)
+		newField := newValue.Field(i)
+		if newField.IsValid() && !newField.IsZero() {
+			oldField.Set(newField)
+		}
+	}
+
+	result := db.Save(&oldReservation)
+	return result.RowsAffected == 1 && result.Error == nil
+}
+
+// delete
+func (db *DB) DeleteReservation(id int) bool {
+	result := db.Delete(&Reservation{}, id)
+	if result.RowsAffected != 1 || result.Error != nil {
+		return false
+	}
+	return true
 }

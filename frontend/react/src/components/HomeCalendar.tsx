@@ -19,10 +19,6 @@ export default function HomeCalendar() {
     cardInfo:
       | {
           reservation: Reservation;
-          position: {
-            x: number;
-            y: number;
-          };
         }
       | undefined;
     openModal: boolean;
