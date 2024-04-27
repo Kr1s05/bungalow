@@ -99,6 +99,11 @@ func (db *DB) GetReservationsBySearchQuery(query *Keywords) *[]Reservation {
 	return &reservations
 }
 
+func (db *DB) getFirstYear() int {
+	var year int
+	db.Raw("")
+}
+
 // create
 func (db *DB) CreateReservation(reservation *Reservation) error {
 	result := db.Create(reservation)

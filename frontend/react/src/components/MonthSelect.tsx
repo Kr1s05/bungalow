@@ -8,12 +8,18 @@ import {
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useState } from "react";
+import { format, setMonth } from "date-fns";
+import { enUS } from "date-fns/locale";
+import capitalize from "@/util/capitalize";
 
-export default function DropdownSelect(props: {
-  buttonStyle?: string;
-  title: string;
-  options: Array<string>;
-}) {
+const months: Array<string> = [];
+for (let i = 0; i < 12; i++) {
+  months[i] = capitalize(
+    format(setMonth(new Date(), i), "LLLL", { locale: enUS })
+  );
+}
+
+export default function MonthSelect() {
   const [state, setState] = useState<{
     open: boolean;
     choice: number;
@@ -29,18 +35,14 @@ export default function DropdownSelect(props: {
       }}
     >
       <PopoverTrigger asChild>
-        <Button
-          role="combobox"
-          aria-expanded={state.open}
-          className={props.buttonStyle}
-        >
-          {state.choice == -1 ? props.title : props.options[state.choice]}
+        <Button role="combobox" aria-expanded={state.open} className={"w-fit"}>
+          {state.choice == -1 ? "Month" : months[state.choice]}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start">
+      <PopoverContent align="start" className="w-min">
         <Command>
           <CommandGroup>
-            {props.options.map((option, i, options) => (
+            {months.map((option, i, options) => (
               <CommandItem
                 key={i}
                 value={options[i]}
