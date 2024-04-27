@@ -15,6 +15,8 @@ type Reservation struct {
 	Person       `gorm:"embedded"`
 	StartingDate time.Time `gorm:"index"`
 	EndingDate   time.Time `gorm:"index"`
+	Price        float32
+	Note         string
 }
 
 type Person struct {
@@ -22,4 +24,10 @@ type Person struct {
 	LastName    string
 	Email       string
 	PhoneNumber string
+}
+
+type Keywords struct {
+	Name  []string
+	Email []string
+	Phone []string
 }

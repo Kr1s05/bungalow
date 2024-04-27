@@ -40,14 +40,14 @@ export function NavBar() {
             </Link>
             <Link
               className="flex w-full items-center py-2 text-xl font-semibold"
-              to={"/game"}
+              to={"/search"}
             >
               <Search size={15} className="mr-2" />
               Search
             </Link>
             <Link
               className="flex w-full items-center py-2 text-xl font-semibold"
-              to={"/about"}
+              to={"/add"}
             >
               <Plus size={18} className="mr-1" />
               Add
@@ -60,7 +60,7 @@ export function NavBar() {
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuLink asChild>
-                <Link className={linkClassnames} to={"/game"}>
+                <Link className={linkClassnames} to={"/search"}>
                   <Search size={15} className="mr-1" />
                   Search
                 </Link>
@@ -72,7 +72,7 @@ export function NavBar() {
                 </Link>
               </NavigationMenuLink>
               <NavigationMenuLink asChild>
-                <Link className={linkClassnames} to={"/about"}>
+                <Link className={linkClassnames} to={"/add"}>
                   <Plus size={18} />
                   Add
                 </Link>
