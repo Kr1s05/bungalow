@@ -5,7 +5,7 @@ import { ChangeEvent, useState } from "react";
 type Category = "name" | "phone" | "email";
 type Keyword = { word: string; categories: Array<Category> };
 
-export default function Searchbar(props: { ClassName?: string }) {
+export default function SearchBar(props: { ClassName?: string }) {
   const [state, setState] = useState<{
     search: string;
     keywords: Array<Keyword>;
