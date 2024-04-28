@@ -2,25 +2,22 @@ import { Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { ChangeEvent, useState } from "react";
 
-type Category = "name" | "phone" | "email";
-type Keyword = { word: string; categories: Array<Category> };
+export type Category = "name" | "phone" | "email";
+export type Keyword = { word: string; categories: Array<Category> };
 
-export default function SearchBar(props: { ClassName?: string }) {
-  const [state, setState] = useState<{
-    search: string;
-    keywords: Array<Keyword>;
-  }>({
-    search: "",
-    keywords: [],
-  });
+export default function SearchBar(props: {
+  ClassName?: string;
+  updateFunction: (keywords: Array<Keyword>) => void;
+}) {
+  const [search, setSearch] = useState<string>("");
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     const search = e.target.value;
     const words = search.split(" ");
     const keywords = words
       .filter((word) => word != "" && word)
       .map(getCategory);
-    console.log(JSON.stringify(keywords));
-    setState((prevState) => ({ ...prevState, search, keywords }));
+    setSearch(search);
+    props.updateFunction(keywords);
   };
   const getCategory = (word: string): Keyword => {
     const result: Keyword = {
@@ -59,7 +56,7 @@ export default function SearchBar(props: { ClassName?: string }) {
       <Input
         type="text"
         placeholder="Search..."
-        value={state.search}
+        value={search}
         className="bg-background rounded-full grow px-5"
         onChange={handleSearchChange}
       />

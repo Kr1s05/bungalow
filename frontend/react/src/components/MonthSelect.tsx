@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { format, setMonth } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -19,13 +19,14 @@ for (let i = 0; i < 12; i++) {
   );
 }
 
-export default function MonthSelect() {
+export default function MonthSelect(props: {
+  month: number;
+  updateFunction: (month: number) => void;
+}) {
   const [state, setState] = useState<{
     open: boolean;
-    choice: number;
   }>({
     open: false,
-    choice: -1,
   });
   return (
     <Popover
@@ -35,28 +36,39 @@ export default function MonthSelect() {
       }}
     >
       <PopoverTrigger asChild>
-        <Button role="combobox" aria-expanded={state.open} className={"w-fit"}>
-          {state.choice == -1 ? "Month" : months[state.choice]}
+        <Button
+          role="combobox"
+          aria-expanded={state.open}
+          className={
+            "w-[120px] hover:bg-background hover:text-white border border-secondary"
+          }
+        >
+          {props.month == -1 ? "Month" : months[props.month]}
+          {state.open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-min">
         <Command>
           <CommandGroup>
-            {months.map((option, i, options) => (
+            {months.map((option, i) => (
               <CommandItem
                 key={i}
-                value={options[i]}
+                value={String(i)}
                 onSelect={(currentValue) => {
+                  props.updateFunction(
+                    Number(currentValue) == props.month
+                      ? -1
+                      : Number(currentValue)
+                  );
                   setState({
                     open: false,
-                    choice: currentValue == options[state.choice] ? -1 : i,
                   });
                 }}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    state.choice === i ? "opacity-100" : "opacity-0"
+                    props.month === i ? "opacity-100" : "opacity-0"
                   )}
                 />
                 {option}

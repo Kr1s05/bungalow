@@ -15,6 +15,7 @@ type Reservation struct {
 	Person       `gorm:"embedded"`
 	StartingDate time.Time `gorm:"index"`
 	EndingDate   time.Time `gorm:"index"`
+	Confirmed    bool
 	Price        float32
 	Note         string
 }

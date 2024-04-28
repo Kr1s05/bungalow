@@ -1,4 +1,6 @@
+import { Keyword } from "@/components/SearchBar";
 import client from "./AxiosClient";
+import { GenericAbortSignal } from "axios";
 
 export async function getReservationsForMonth(
   year: number,
@@ -29,6 +31,26 @@ export async function getReservationsForMultipleMonths(
     });
 }
 
+export async function getFirstYear() {
+  const response = await client.get("/reservations/first_year");
+  return Number(response.data);
+}
+
+export async function searchReservations(
+  query: Query,
+  signal: GenericAbortSignal
+): Promise<ReservationList> {
+  return client
+    .post("/reservations/search", query, { signal })
+    .then((response) => {
+      if (response.status != 200)
+        throw Error(response.statusText + response.status);
+      const data: ApiReservationList = response.data;
+      const result: ReservationList = data.map(ApiReservationToReservation);
+      return result;
+    });
+}
+
 function ApiReservationToReservation(r: ApiReservation): Reservation {
   return {
     ID: r.ID,
@@ -40,8 +62,11 @@ function ApiReservationToReservation(r: ApiReservation): Reservation {
     EndingDate: new Date(r.EndingDate),
     Price: r.Price,
     Note: r.Note,
+    Confirmed: r.Confirmed,
   };
 }
+
+export type Query = { keywords: Array<Keyword>; month: number; year: number };
 
 type ApiReservation = {
   ID: number;
@@ -53,11 +78,12 @@ type ApiReservation = {
   PhoneNumber: string;
   Price: number;
   Note: string;
+  Confirmed: boolean;
 };
 
 type ApiReservationList = Array<ApiReservation>;
 
-type ReservationList = Array<Reservation>;
+export type ReservationList = Array<Reservation>;
 
 export type Reservation = {
   ID: number;
@@ -69,4 +95,5 @@ export type Reservation = {
   PhoneNumber: string;
   Price: number;
   Note: string;
+  Confirmed: boolean;
 };

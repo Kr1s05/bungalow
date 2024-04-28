@@ -16,8 +16,8 @@ func main() {
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"GET", "POST"},
-		AllowHeaders:     []string{"Origin"},
+		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "content-type"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
@@ -73,11 +73,30 @@ func main() {
 		c.AsciiJSON(http.StatusOK, result)
 	})
 
+	router.GET("/reservations/first_year", func(ctx *gin.Context) {
+		year := database.GetFirstYear()
+		ctx.AsciiJSON(http.StatusOK, year)
+	})
+
 	router.POST("/reservations/search", func(c *gin.Context) {
-		var query []SearchKeywords
+		var query Query
 		c.Bind(&query)
-		keywords := convertRequestKeywordsToDbKeywords(&query)
-		reservations := database.GetReservationsBySearchQuery(keywords)
+		if query.Month > 12 || query.Month < -1 || query.Month == 0 {
+			c.AsciiJSON(http.StatusBadRequest, gin.H{"error": "Invalid Month specified."})
+			return
+		}
+		if len(query.Keywords) > 0 {
+			keywords := convertRequestKeywordsToDbKeywords(&query.Keywords)
+			reservations := database.GetReservationsBySearchQuery(keywords, time.Month(query.Month), query.Year)
+			c.AsciiJSON(http.StatusOK, reservations)
+			return
+		}
+		if query.Month == -1 {
+			reservations := database.GetReservationsByYear(query.Year)
+			c.AsciiJSON(http.StatusOK, reservations)
+			return
+		}
+		reservations := database.GetReservationsByMonth(query.Year, time.Month(query.Month))
 		c.AsciiJSON(http.StatusOK, reservations)
 	})
 

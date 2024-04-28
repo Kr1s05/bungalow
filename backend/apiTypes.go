@@ -10,6 +10,7 @@ type ApiReservation struct {
 	ID           uint
 	StartingDate time.Time
 	EndingDate   time.Time
+	Confirmed    bool
 	Price        float32
 	Note         string
 	db.Person
@@ -17,9 +18,15 @@ type ApiReservation struct {
 
 type ReservationList []ApiReservation
 
-type SearchKeywords struct {
+type SearchKeyword struct {
 	Word       string
 	Categories []string
+}
+
+type Query struct {
+	Keywords []SearchKeyword
+	Month    int
+	Year     int
 }
 
 func convertToApiReservation(r *db.Reservation) ApiReservation {
@@ -30,6 +37,7 @@ func convertToApiReservation(r *db.Reservation) ApiReservation {
 	reservation.Person = r.Person
 	reservation.Note = r.Note
 	reservation.Price = r.Price
+	reservation.Confirmed = r.Confirmed
 	return reservation
 }
 
@@ -41,7 +49,7 @@ func convertSliceToApiReservation(r *[]db.Reservation) []ApiReservation {
 	return reservations
 }
 
-func convertRequestKeywordsToDbKeywords(w *[]SearchKeywords) *db.Keywords {
+func convertRequestKeywordsToDbKeywords(w *[]SearchKeyword) *db.Keywords {
 	var result db.Keywords
 	for _, keyword := range *w {
 		for _, category := range keyword.Categories {
