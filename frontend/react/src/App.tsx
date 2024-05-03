@@ -3,6 +3,7 @@ import SiteLayout from "./layouts/SiteLayout";
 import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
 import AddPage from "./pages/AddPage";
+import EditPage from "./pages/EditPage";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" Component={HomePage} />
         <Route path="/search" Component={SearchPage} />
         <Route path="/add" Component={AddPage} />
+        <Route path="/edit/:id" Component={EditPage} />
       </Route>
     </Routes>
   );

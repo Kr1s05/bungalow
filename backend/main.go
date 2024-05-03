@@ -67,6 +67,17 @@ func main() {
 		c.AsciiJSON(http.StatusOK, result)
 	})
 
+	router.GET("/reservation/:id", func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
+		if err != nil {
+			ctx.AsciiJSON(http.StatusBadRequest, gin.H{"error": "Invalid id path parameter."})
+			return
+		}
+		reservation := database.GetReservationById(id)
+		result := convertToApiReservation(reservation)
+		ctx.AsciiJSON(http.StatusOK, result)
+	})
+
 	router.GET("/reservations", func(c *gin.Context) {
 		reservations := database.GetAllReservations()
 		result := convertSliceToApiReservation(reservations)

@@ -5,7 +5,7 @@ import { GenericAbortSignal } from "axios";
 export async function getReservationsForMonth(
   year: number,
   month: number
-): Promise<ReservationList> {
+): Promise<ReservationListType> {
   return client.get(`/reservations/${year}/${month}`).then((response) => {
     if (response.status != 200)
       throw Error(response.statusText + response.status);
@@ -19,14 +19,14 @@ export async function getReservationsForMultipleMonths(
   year: number,
   month: number,
   length: number
-): Promise<ReservationList> {
+): Promise<ReservationListType> {
   return client
     .get(`/reservations/${year}/${month}/${length}`)
     .then((response) => {
       if (response.status != 200)
         throw Error(response.statusText + response.status);
       const data: ApiReservationList = response.data;
-      const result: ReservationList = data.map(ApiReservationToReservation);
+      const result: ReservationListType = data.map(ApiReservationToReservation);
       return result;
     });
 }
@@ -39,16 +39,25 @@ export async function getFirstYear() {
 export async function searchReservations(
   query: Query,
   signal: GenericAbortSignal
-): Promise<ReservationList> {
+): Promise<ReservationListType> {
   return client
     .post("/reservations/search", query, { signal })
     .then((response) => {
       if (response.status != 200)
         throw Error(response.statusText + response.status);
       const data: ApiReservationList = response.data;
-      const result: ReservationList = data.map(ApiReservationToReservation);
+      const result: ReservationListType = data.map(ApiReservationToReservation);
       return result;
     });
+}
+
+export async function getReservationById(id: string): Promise<Reservation> {
+  if (id == "-1") throw new Error("Invalid id.");
+  return client.get(`/reservation/${id}`).then((response) => {
+    if (response.status != 200) throw new Error(response.data.error);
+    const data: ApiReservation = response.data;
+    return ApiReservationToReservation(data);
+  });
 }
 
 function ApiReservationToReservation(r: ApiReservation): Reservation {
@@ -83,7 +92,7 @@ type ApiReservation = {
 
 type ApiReservationList = Array<ApiReservation>;
 
-export type ReservationList = Array<Reservation>;
+export type ReservationListType = Array<Reservation>;
 
 export type Reservation = {
   ID: number;

@@ -95,19 +95,24 @@ func (db *DB) GetReservationsBySearchQuery(query *Keywords, month time.Month, ye
 		startDate = time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
 		endDate = startDate.AddDate(0, 1, 0).Add(-time.Nanosecond)
 	}
-	where += "( "
+
 	if len(query.Name) > 0 {
-		where += "(LOWER(first_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%')"
+		where += "((LOWER(first_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%')"
 		if len(query.Name) > 1 {
 			where += " AND "
 		} else {
 			where += " OR "
 		}
 		where += "LOWER(last_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%') )"
+		if len(query.Email) == 0 {
+			where += ")"
+		}
 	}
 	if len(query.Email) > 0 {
 		if len(query.Name) > 0 {
 			where += " OR"
+		} else {
+			where += "("
 		}
 		where += " email SIMILAR TO '%(" + strings.Join(query.Email, "|") + ")%')"
 	}
@@ -117,7 +122,7 @@ func (db *DB) GetReservationsBySearchQuery(query *Keywords, month time.Month, ye
 		}
 		where += " phone_number SIMILAR TO '%(" + strings.Join(query.Phone, "|") + ")%'"
 	}
-	db.Where("(starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?) AND ("+where+")", startDate, endDate, startDate, endDate).Order("starting_date ASC").Find(&reservations)
+	db.Debug().Where("(starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?) AND ("+where+")", startDate, endDate, startDate, endDate).Order("starting_date ASC").Find(&reservations)
 	return &reservations
 }
 

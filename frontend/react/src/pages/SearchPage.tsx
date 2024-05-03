@@ -1,7 +1,9 @@
-import { ReservationList, searchReservations } from "@/api/reservationsApi";
+import { ReservationListType, searchReservations } from "@/api/reservationsApi";
 import MonthSelect from "@/components/MonthSelect";
+import ReservationList from "@/components/ReservationList";
 import SearchBar, { Keyword } from "@/components/SearchBar";
 import YearInput from "@/components/YearInput";
+import { Separator } from "@/components/ui/separator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
@@ -11,7 +13,7 @@ export default function SearchPage() {
     keywords: Array<Keyword>;
     month: number;
     year: number;
-    reservations: ReservationList;
+    reservations: ReservationListType;
   }>({
     keywords: [],
     month: -1,
@@ -53,13 +55,18 @@ export default function SearchPage() {
   };
 
   return (
-    <main className="flex flex-col grow items-top justify-center p-4 md:p-6">
-      <div className="flex flex-row grow-0 gap-4 h-fit items-center">
-        <SearchBar updateFunction={updateSearch} />
+    <main className="flex flex-col grow align-top items-center p-4 md:p-6 gap-6">
+      <div className="grid grid-cols-2 sm:flex flex-row w-full gap-4 h-fit justify-items-center items-center justify-center">
+        <SearchBar updateFunction={updateSearch} ClassName="col-span-2" />
         <MonthSelect updateFunction={updateMonth} month={state.month} />
         <YearInput updateFunction={updateYear} year={state.year} />
       </div>
-      {JSON.stringify(query.data)}
+      <Separator className="hidden md:block" />
+      {query.isLoading || !query.data ? (
+        "Loading..."
+      ) : (
+        <ReservationList reservations={query.data} />
+      )}
     </main>
   );
 }

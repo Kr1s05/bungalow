@@ -5,11 +5,12 @@ import {
   getReservationsForMultipleMonths,
 } from "@/api/reservationsApi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { addDays, isAfter, isBefore } from "date-fns";
+import { isAfter, isBefore } from "date-fns";
 import { ActiveModifiers, SelectSingleEventHandler } from "react-day-picker";
 import ReservationCard from "./ReservationCard";
 import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css";
+import "@/style/popup.css";
 
 export default function HomeCalendar() {
   const [state, setState] = useState<{
@@ -79,8 +80,8 @@ export default function HomeCalendar() {
   const isReservedDate = (date: Date) => {
     if (!reservations) return false;
     for (const reservation of reservations) {
-      if (isBefore(date, addDays(reservation.StartingDate, -1))) continue;
-      if (isAfter(date, addDays(reservation.EndingDate, -1))) continue;
+      if (isBefore(date, reservation.StartingDate)) continue;
+      if (isAfter(date, reservation.EndingDate)) continue;
       return true;
     }
     return false;
@@ -115,8 +116,8 @@ export default function HomeCalendar() {
   const getReservationForDate = (date: Date): Reservation | undefined => {
     if (!reservations) return;
     for (const reservation of reservations) {
-      if (isBefore(date, addDays(reservation.StartingDate, -1))) continue;
-      if (isAfter(date, addDays(reservation.EndingDate, -1))) continue;
+      if (isBefore(date, reservation.StartingDate)) continue;
+      if (isAfter(date, reservation.EndingDate)) continue;
       return reservation;
     }
   };
@@ -137,7 +138,7 @@ export default function HomeCalendar() {
         modifiersStyles={modifiersStyles}
         classNames={{
           month: "space-y-4 border rounded-3xl p-4 h-[395px]",
-          months: "grid gap-6 grid-rows-2 grid-cols-3",
+          months: "grid gap-3 xl:gap-6 grid-cols-1 lg:grid-cols-3",
           nav_button_next:
             "absolute end-0 hover:bg-primary hover:text-secondary",
           nav_button_previous:
@@ -157,8 +158,7 @@ export default function HomeCalendar() {
         modal
         closeOnDocumentClick
         position={"center center"}
-        className="bg-transparent"
-        contentStyle={{ background: "rgba(0,0,0,0)", border: "0px" }}
+        className="bg-transparent my-popup"
       >
         <div className="bg-transparent">
           {state.cardInfo ? (

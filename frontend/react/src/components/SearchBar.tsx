@@ -46,7 +46,7 @@ export default function SearchBar(props: {
   return (
     <div
       className={
-        "flex flex-row gap-2 bg-primary py-3 px-6 rounded-full h-fit" +
+        "flex flex-row gap-2 bg-primary py-3 px-6 rounded-full h-fit " +
         (props.ClassName ? props.ClassName : "")
       }
     >
