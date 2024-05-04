@@ -16,7 +16,7 @@
 }
 
 .my-popup-overlay {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
 }
 
 [data-popup='tooltip'].my-popup-overlay {
@@ -27,4 +27,31 @@
     .my-popup-content {
         width: 50%;
     }
+}
+
+
+.my-nested-popup-content {
+    margin: auto;
+    background: rgba(255, 255, 255, 0);
+    border: 0;
+    width: 20%;
+    height: fit-content;
+    padding: 5px;
+}
+
+.my-nested-popup-arrow {
+    color: rgb(255, 255, 255);
+}
+
+[role='tooltip'].my-nested-popup-content {
+    width: 200px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 0px 3px;
+}
+
+.my-nested-popup-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+[data-popup='tooltip'].my-nested-popup-overlay {
+    background: transparent;
 }

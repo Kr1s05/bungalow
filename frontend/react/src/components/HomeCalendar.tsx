@@ -7,10 +7,10 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAfter, isBefore } from "date-fns";
 import { ActiveModifiers, SelectSingleEventHandler } from "react-day-picker";
-import ReservationCard from "./ReservationCard";
-import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css";
 import "@/style/popup.css";
+import ReservationPopup from "./ReservationPopup";
+import { getReservationForDate } from "@/util/reservations";
 
 export default function HomeCalendar() {
   const [state, setState] = useState<{
@@ -52,6 +52,19 @@ export default function HomeCalendar() {
     queryClient.invalidateQueries({ queryKey: ["reservations"] });
   }, [state.currentMonth, queryClient]);
 
+  useEffect(() => {
+    const reservation = getReservationForDate(
+      state.cardInfo?.reservation.StartingDate,
+      reservations
+    );
+    const openModal = Boolean(reservation);
+    setState((prevState) => ({
+      ...prevState,
+      cardInfo: reservation ? { reservation } : undefined,
+      openModal,
+    }));
+  }, [reservations]);
+
   if (isError) {
     return (
       <p className="text-center text-xl">{"Error connecting to backend."}</p>
@@ -90,36 +103,27 @@ export default function HomeCalendar() {
   const handleSelectionChange: SelectSingleEventHandler = (
     date,
     _,
-    modifiers: ActiveModifiers,
-    e
+    modifiers: ActiveModifiers
   ) => {
     let reservation: Reservation | undefined;
-    let position: { x: number; y: number };
     if (modifiers.reserved && date) {
-      reservation = getReservationForDate(date);
-      position = {
-        x: e.clientX,
-        y: e.clientY,
-      };
+      reservation = getReservationForDate(date, reservations);
     }
     setState((prevState) => ({
       ...prevState,
       selectedDate: modifiers.reserved ? date : undefined,
       cardInfo:
-        date && modifiers.reserved && reservation
-          ? { reservation, position }
-          : undefined,
+        date && modifiers.reserved && reservation ? { reservation } : undefined,
       openModal: Boolean(date && modifiers.reserved && reservation),
     }));
   };
 
-  const getReservationForDate = (date: Date): Reservation | undefined => {
-    if (!reservations) return;
-    for (const reservation of reservations) {
-      if (isBefore(date, reservation.StartingDate)) continue;
-      if (isAfter(date, reservation.EndingDate)) continue;
-      return reservation;
-    }
+  const closeModal = () => {
+    setState((prevState) => ({ ...prevState, openModal: false }));
+  };
+
+  const updateModal = () => {
+    queryClient.invalidateQueries({ queryKey: ["reservations"] });
   };
 
   return (
@@ -147,27 +151,14 @@ export default function HomeCalendar() {
           cell: "h-9 w-9 text-center text-sm p-0 relative [&amp;:has([aria-selected].day-range-end)]:rounded-r-md [&amp;:has([aria-selected].day-outside)]:bg-accent/50 first:[&amp;:has([aria-selected])]:rounded-l-md last:[&amp;:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         }}
       />
-      <Popup
-        open={state.openModal}
-        onClose={() =>
-          setState((prevState) => ({
-            ...prevState,
-            openModal: !prevState.openModal,
-          }))
-        }
-        modal
-        closeOnDocumentClick
-        position={"center center"}
-        className="bg-transparent my-popup"
-      >
-        <div className="bg-transparent">
-          {state.cardInfo ? (
-            <ReservationCard {...state.cardInfo.reservation} />
-          ) : (
-            ""
-          )}
-        </div>
-      </Popup>
+      {state.cardInfo && (
+        <ReservationPopup
+          reservation={state.cardInfo.reservation}
+          open={state.openModal}
+          closeFn={closeModal}
+          updateFn={updateModal}
+        />
+      )}
     </>
   );
 }

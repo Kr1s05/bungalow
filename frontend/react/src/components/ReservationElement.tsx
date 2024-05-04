@@ -3,9 +3,10 @@ import { CircleCheckBig, History } from "lucide-react";
 
 export default function ReservationElement(props: {
   reservation: Reservation;
+  modalFn: (reservation: Reservation) => void;
 }) {
   return (
-    <div>
+    <div onClick={() => props.modalFn(props.reservation)}>
       <div className="relative w-100 h-fit border border-primary shadow-md shadow-secondary rounded-md p-2 grid grid-cols-2 my-2 md:hidden">
         <span>
           {props.reservation.FirstName + " " + props.reservation.LastName}

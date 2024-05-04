@@ -9,13 +9,29 @@ import {
 } from "./ui/card";
 import { differenceInCalendarDays } from "date-fns";
 import { Button } from "./ui/button";
-import { CircleCheckBig, History } from "lucide-react";
+import { CircleCheckBig, History, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import Popup from "reactjs-popup";
+import { useState } from "react";
 
 export default function ReservationCard(
-  reservation: Reservation & { className?: string }
+  reservation: Reservation & { className?: string } & {
+    confirmFn: (id: number) => void;
+    deleteFn: (id: number) => void;
+    closeFn: () => void;
+  }
 ) {
+  const [open, setOpen] = useState(false);
+  const closeModal = () => setOpen(false);
   return (
-    <Card className={reservation.className + " xl:text-lg"}>
+    <Card className={reservation.className + " xl:text-lg relative"}>
+      <Button
+        className="absolute top-2 right-2 p-1 m-0 h-fit rounded-full"
+        variant={"outline"}
+        onClick={reservation.closeFn}
+      >
+        <X size={25} />
+      </Button>
       <CardHeader>
         <CardTitle>
           {reservation.FirstName + " " + reservation.LastName}
@@ -59,16 +75,51 @@ export default function ReservationCard(
         </div>
       </CardContent>
       <CardFooter className="flex flex-row justify-between">
-        <Button className="w-1/4" disabled={reservation.Confirmed}>
+        <Button
+          className="w-1/4"
+          disabled={reservation.Confirmed}
+          onClick={() => reservation.confirmFn(reservation.ID)}
+        >
           {reservation.Confirmed ? "Confirmed" : "Confirm"}
         </Button>
-        <Button className="w-1/4" variant={"secondary"}>
-          Edit
-        </Button>
-        <Button className="w-1/4" variant={"destructive"}>
+        <Link to={`/edit/${reservation.ID}`} className="w-1/4">
+          <Button className="w-full" variant={"secondary"}>
+            Edit
+          </Button>
+        </Link>
+        <Button
+          variant={"destructive"}
+          className="w-1/4"
+          onClick={() => setOpen(true)}
+        >
           Delete
         </Button>
       </CardFooter>
+      <Popup
+        className="my-nested-popup bg-transparent"
+        position={"top center"}
+        open={open}
+        closeOnDocumentClick
+        onClose={closeModal}
+        modal
+      >
+        <div className="border border-secondary bg-background p-2 rounded-md flex flex-col gap-4">
+          <h3 className="text-center text-2xl">Are you sure?</h3>
+          <p className="p-2">This action is irreversible!</p>
+          <div className="w-full flex flex-row p-2 gap-4">
+            <Button className="grow" onClick={closeModal}>
+              Cancel
+            </Button>
+            <Button
+              className="grow"
+              variant={"destructive"}
+              onClick={() => reservation.deleteFn(reservation.ID)}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Popup>
     </Card>
   );
 }

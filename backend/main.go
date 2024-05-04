@@ -133,6 +133,17 @@ func main() {
 		}
 	})
 
+	router.POST("/reservations/confirm", func(ctx *gin.Context) {
+		var reservation db.Reservation
+		ctx.Bind(&reservation)
+		affected := database.SetConfirmed(reservation.ID, reservation.Confirmed)
+		if affected != 1 {
+			ctx.AsciiJSON(http.StatusNotModified, gin.H{"error": "Error changing confirmed status."})
+			return
+		}
+		ctx.Status(http.StatusOK)
+	})
+
 	router.DELETE("/reservations/delete/:id", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {

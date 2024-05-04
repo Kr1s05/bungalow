@@ -60,6 +60,32 @@ export async function getReservationById(id: string): Promise<Reservation> {
   });
 }
 
+export async function updateReservation(r: Reservation): Promise<void> {
+  return client.post("/reservations/update", r).then((response) => {
+    if (response.status != 200) throw new Error("Not updated.");
+  });
+}
+
+export async function createReservation(r: Reservation): Promise<void> {
+  return client.post("/reservations/add", r).then((response) => {
+    if (response.status != 200) throw new Error("Not created.");
+  });
+}
+
+export async function confirmReservation(id: number): Promise<void> {
+  return client
+    .post("/reservations/confirm", { ID: id, confirmed: true })
+    .then((response) => {
+      if (response.status != 200) throw new Error("Not confirmed.");
+    });
+}
+
+export async function deleteReservation(id: number): Promise<void> {
+  return client.delete(`/reservations/delete/${id}`).then((response) => {
+    if (response.status != 200) throw new Error("Not deleted.");
+  });
+}
+
 function ApiReservationToReservation(r: ApiReservation): Reservation {
   return {
     ID: r.ID,
@@ -90,12 +116,7 @@ type ApiReservation = {
   Confirmed: boolean;
 };
 
-type ApiReservationList = Array<ApiReservation>;
-
-export type ReservationListType = Array<Reservation>;
-
-export type Reservation = {
-  ID: number;
+type newReservation = {
   StartingDate: Date;
   EndingDate: Date;
   FirstName: string;
@@ -105,4 +126,12 @@ export type Reservation = {
   Price: number;
   Note: string;
   Confirmed: boolean;
+};
+
+type ApiReservationList = Array<ApiReservation>;
+
+export type ReservationListType = Array<Reservation>;
+
+export type Reservation = newReservation & {
+  ID: number;
 };

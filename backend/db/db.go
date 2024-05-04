@@ -1,7 +1,6 @@
 package db
 
 import (
-	"reflect"
 	"strings"
 	"time"
 
@@ -140,25 +139,13 @@ func (db *DB) CreateReservation(reservation *Reservation) error {
 
 // update
 func (db *DB) UpdateReservation(reservation *Reservation) bool {
-	var oldReservation Reservation
-	db.First(&oldReservation, reservation.ID)
-	if oldReservation.ID != reservation.ID {
-		return false
-	}
-
-	oldValue := reflect.ValueOf(&oldReservation).Elem()
-	newValue := reflect.ValueOf(reservation).Elem()
-
-	for i := 0; i < oldValue.NumField(); i++ {
-		oldField := oldValue.Field(i)
-		newField := newValue.Field(i)
-		if newField.IsValid() && !newField.IsZero() {
-			oldField.Set(newField)
-		}
-	}
-
-	result := db.Save(&oldReservation)
+	result := db.Save(&reservation)
 	return result.RowsAffected == 1 && result.Error == nil
+}
+
+func (db *DB) SetConfirmed(id uint, confirmed bool) int64 {
+	result := db.Model(&Reservation{}).Where("id = ?", id).Update("confirmed", confirmed)
+	return result.RowsAffected
 }
 
 // delete

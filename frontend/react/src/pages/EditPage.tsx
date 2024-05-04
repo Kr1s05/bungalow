@@ -1,8 +1,12 @@
-import { Reservation, getReservationById } from "@/api/reservationsApi";
+import {
+  Reservation,
+  getReservationById,
+  updateReservation,
+} from "@/api/reservationsApi";
 import ReservationForm from "@/components/ReservationForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { reservationSchema } from "@/schemas/ReservationSchema";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
@@ -23,6 +27,10 @@ export default function EditPage() {
   }, [data]);
 
   const navigate = useNavigate();
+  const updateMutation = useMutation({
+    mutationKey: ["update"],
+    mutationFn: updateReservation,
+  });
 
   if (isError)
     return (
@@ -39,7 +47,7 @@ export default function EditPage() {
     );
 
   if (data.ID == 0) return navigate("/");
-  const updateReservation = (r: z.infer<typeof reservationSchema>) => {
+  const updateFn = (r: z.infer<typeof reservationSchema>) => {
     const reservation: Reservation = {
       ID: Number(id),
       FirstName: r.firstName,
@@ -52,6 +60,7 @@ export default function EditPage() {
       Confirmed: r.confirmed,
       Note: r.note,
     };
+    updateMutation.mutate(reservation);
   };
 
   return (
@@ -60,10 +69,7 @@ export default function EditPage() {
         className="h-[calc(100vh-106px)] lg:w-3/4 2xl:w-1/2"
         viewPortClasses="md:flex items-center"
       >
-        <ReservationForm
-          reservation={reservation}
-          updateFunction={updateReservation}
-        />
+        <ReservationForm reservation={reservation} updateFunction={updateFn} />
       </ScrollArea>
     </main>
   );
