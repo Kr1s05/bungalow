@@ -116,7 +116,7 @@ type ApiReservation = {
   Confirmed: boolean;
 };
 
-type newReservation = {
+export type newReservation = {
   StartingDate: Date;
   EndingDate: Date;
   FirstName: string;

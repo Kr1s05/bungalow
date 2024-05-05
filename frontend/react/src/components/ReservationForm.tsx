@@ -29,7 +29,7 @@ import { CalendarIcon, CircleCheckBig, History } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Textarea } from "./ui/textarea";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function ReservationForm(props: {
@@ -39,29 +39,46 @@ export default function ReservationForm(props: {
   const form = useForm<z.infer<typeof reservationSchema>>({
     resolver: zodResolver(reservationSchema),
     mode: "onChange",
-    values: {
-      firstName: props.reservation ? props.reservation.FirstName : "",
-      lastName: props.reservation ? props.reservation.LastName : "",
-      email: props.reservation ? props.reservation.Email : "",
-      phoneNumber: props.reservation ? props.reservation.PhoneNumber : "",
-      price: props.reservation ? String(props.reservation.Price) : "0",
-      startingDate: props.reservation
-        ? props.reservation.StartingDate
-        : new Date(),
-      endingDate: props.reservation ? props.reservation.EndingDate : new Date(),
-      note: props.reservation ? props.reservation.Note : "",
-      confirmed: props.reservation ? props.reservation.Confirmed : false,
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+      email: "",
+      price: "0",
+      note: "",
+      confirmed: false,
     },
   });
+
+  useEffect(() => {
+    if (props.reservation) {
+      form.setValue("firstName", props.reservation.FirstName);
+      form.setValue("lastName", props.reservation.LastName);
+      form.setValue("phoneNumber", props.reservation.PhoneNumber);
+      form.setValue("email", props.reservation.Email);
+      form.setValue("startingDate", props.reservation.StartingDate);
+      form.setValue("endingDate", props.reservation.EndingDate);
+      form.setValue("note", props.reservation.Note);
+      form.setValue("price", String(props.reservation.Price));
+      form.setValue("confirmed", props.reservation.Confirmed);
+    }
+  }, [props.reservation]);
 
   const [state, setState] = useState<{
     startingMonth: number;
     length: number;
+    year: number;
   }>({
-    startingMonth: form.getValues().startingDate.getMonth(),
-    length:
-      form.getValues().endingDate.getMonth() -
-      form.getValues().startingDate.getMonth(),
+    startingMonth: form.getValues().startingDate
+      ? form.getValues().startingDate.getMonth()
+      : new Date().getMonth(),
+    length: form.getValues().startingDate
+      ? form.getValues().endingDate.getMonth() -
+        form.getValues().startingDate.getMonth()
+      : 1,
+    year: form.getValues().startingDate
+      ? form.getValues().startingDate.getFullYear()
+      : new Date().getFullYear(),
   });
 
   const {
@@ -72,7 +89,7 @@ export default function ReservationForm(props: {
     queryKey: ["reservations"],
     queryFn: () => {
       return getReservationsForMultipleMonths(
-        form.getValues().startingDate.getFullYear(),
+        state.year,
         state.startingMonth + 1,
         state.length + 1
       );
@@ -196,9 +213,13 @@ export default function ReservationForm(props: {
                     onMonthChange={(month) => {
                       setState({
                         startingMonth: month.getMonth(),
-                        length:
-                          form.getValues().endingDate.getMonth() -
-                          month.getMonth(),
+                        length: Math.abs(
+                          form.getValues().endingDate
+                            ? form.getValues().endingDate.getMonth() -
+                                month.getMonth()
+                            : new Date().getMonth() - month.getMonth()
+                        ),
+                        year: month.getFullYear(),
                       });
                     }}
                     showOutsideDays={false}
@@ -206,8 +227,8 @@ export default function ReservationForm(props: {
                     onSelect={field.onChange}
                     disabled={(date: Date) => {
                       if (isReservedDate(date)) return true;
-                      const end = addDays(form.getValues().endingDate, 1);
-                      if (end) return !isBefore(date, end);
+                      const end = form.getValues().endingDate;
+                      if (end) return !isBefore(date, addDays(end, 1));
                       return false;
                     }}
                   />
@@ -235,8 +256,10 @@ export default function ReservationForm(props: {
                     >
                       {field.value ? (
                         format(field.value, "PPP")
-                      ) : (
+                      ) : form.getValues().startingDate ? (
                         <span>Pick a date</span>
+                      ) : (
+                        <span>Pick starting date first</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -259,6 +282,7 @@ export default function ReservationForm(props: {
                     onSelect={field.onChange}
                     disabled={(date: Date) => {
                       const start = form.getValues().startingDate;
+                      if (!start) return true;
                       if (isBefore(date, start)) return true;
                       const reservation = findReservationAfterDate(start);
                       if (!reservation) return false;

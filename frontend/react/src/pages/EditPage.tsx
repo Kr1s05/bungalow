@@ -6,7 +6,7 @@ import {
 import ReservationForm from "@/components/ReservationForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { reservationSchema } from "@/schemas/ReservationSchema";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
@@ -18,6 +18,15 @@ export default function EditPage() {
     queryFn: () => getReservationById(id ? id : "-1"),
     staleTime: Infinity,
   });
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["edit"] });
+    return () => {
+      queryClient.invalidateQueries({ queryKey: ["edit"] });
+    };
+  }, []);
 
   const [reservation, setReservation] = useState<Reservation | undefined>(data);
   useEffect(() => {
