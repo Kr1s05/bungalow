@@ -6,6 +6,8 @@ import {
   deleteReservation,
 } from "@/api/reservationsApi";
 import { useMutation } from "@tanstack/react-query";
+import { useContext } from "react";
+import { ClientContext } from "@/api/AxiosClientProvider";
 
 export default function ReservationPopup(props: {
   reservation: Reservation;
@@ -13,15 +15,17 @@ export default function ReservationPopup(props: {
   closeFn: () => void;
   updateFn: () => void;
 }) {
+  const client = useContext(ClientContext);
+
   const confirmMutation = useMutation({
     mutationKey: ["confirm"],
-    mutationFn: (id: number) => confirmReservation(id),
+    mutationFn: (id: number) => confirmReservation(id, client),
     onSuccess: props.updateFn,
   });
 
   const deleteMutation = useMutation({
     mutationKey: ["delete"],
-    mutationFn: (id: number) => deleteReservation(id),
+    mutationFn: (id: number) => deleteReservation(id, client),
     onSuccess: props.updateFn,
   });
 

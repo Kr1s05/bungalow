@@ -1,3 +1,4 @@
+import { ClientContext } from "@/api/AxiosClientProvider";
 import { ReservationListType, searchReservations } from "@/api/reservationsApi";
 import MonthSelect from "@/components/MonthSelect";
 import ReservationList from "@/components/ReservationList";
@@ -5,7 +6,7 @@ import SearchBar, { Keyword } from "@/components/SearchBar";
 import YearInput from "@/components/YearInput";
 import { Separator } from "@/components/ui/separator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export default function SearchPage() {
@@ -22,6 +23,7 @@ export default function SearchPage() {
   });
 
   const queryClient = useQueryClient();
+  const client = useContext(ClientContext);
 
   const query = useQuery({
     queryKey: ["search"],
@@ -32,7 +34,8 @@ export default function SearchPage() {
           month: state.month != -1 ? state.month + 1 : -1,
           year: state.year,
         },
-        signal
+        signal,
+        client
       );
     },
   });

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Kr1s05/reservations/auth"
 	"github.com/Kr1s05/reservations/db"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -16,11 +17,13 @@ func main() {
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "content-type"},
+		AllowMethods:     []string{"GET", "POST", "OPTIONS", "DELETE"},
+		AllowHeaders:     []string{"Origin", "content-type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+
+	router.Use(auth.AuthenticationMiddleware())
 
 	router.GET("/reservations/:year/:month", func(c *gin.Context) {
 		month, err := strconv.Atoi(c.Param("month"))
@@ -158,5 +161,5 @@ func main() {
 		}
 	})
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }

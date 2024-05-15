@@ -33,7 +33,7 @@ export function NavBar() {
           <div className="grid gap-2 py-6">
             <Link
               className="flex w-full items-center py-2 text-xl font-semibold"
-              to={"/"}
+              to={"/calendar"}
             >
               <Calendar size={15} className="mr-2" />
               Calendar
@@ -66,7 +66,7 @@ export function NavBar() {
                 </Link>
               </NavigationMenuLink>
               <NavigationMenuLink asChild>
-                <Link className={linkClassnames} to={"/"}>
+                <Link className={linkClassnames} to={"/calendar"}>
                   <Calendar size={15} className="mr-1" />
                   Calendar
                 </Link>

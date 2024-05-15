@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
 import {
   Reservation,
@@ -11,8 +11,10 @@ import "reactjs-popup/dist/index.css";
 import "@/style/popup.css";
 import ReservationPopup from "./ReservationPopup";
 import { getReservationForDate } from "@/util/reservations";
+import { ClientContext } from "@/api/AxiosClientProvider";
 
 export default function HomeCalendar() {
+  const client = useContext(ClientContext);
   const [state, setState] = useState<{
     currentMonth: Date;
     currentYear: number;
@@ -37,11 +39,13 @@ export default function HomeCalendar() {
     isLoading,
   } = useQuery({
     queryKey: ["reservations"],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       return await getReservationsForMultipleMonths(
         state.currentYear,
         state.currentMonth.getMonth() + 1,
-        6
+        6,
+        signal,
+        client
       );
     },
   });

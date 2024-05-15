@@ -1,10 +1,10 @@
 import { Keyword } from "@/components/SearchBar";
-import client from "./AxiosClient";
-import { GenericAbortSignal } from "axios";
+import { AxiosInstance, GenericAbortSignal } from "axios";
 
 export async function getReservationsForMonth(
   year: number,
-  month: number
+  month: number,
+  client: AxiosInstance
 ): Promise<ReservationListType> {
   return client.get(`/reservations/${year}/${month}`).then((response) => {
     if (response.status != 200)
@@ -18,10 +18,12 @@ export async function getReservationsForMonth(
 export async function getReservationsForMultipleMonths(
   year: number,
   month: number,
-  length: number
+  length: number,
+  signal: GenericAbortSignal,
+  client: AxiosInstance
 ): Promise<ReservationListType> {
   return client
-    .get(`/reservations/${year}/${month}/${length}`)
+    .get(`/reservations/${year}/${month}/${length}`, { signal })
     .then((response) => {
       if (response.status != 200)
         throw Error(response.statusText + response.status);
@@ -31,14 +33,15 @@ export async function getReservationsForMultipleMonths(
     });
 }
 
-export async function getFirstYear() {
+export async function getFirstYear(client: AxiosInstance) {
   const response = await client.get("/reservations/first_year");
   return Number(response.data);
 }
 
 export async function searchReservations(
   query: Query,
-  signal: GenericAbortSignal
+  signal: GenericAbortSignal,
+  client: AxiosInstance
 ): Promise<ReservationListType> {
   return client
     .post("/reservations/search", query, { signal })
@@ -51,7 +54,10 @@ export async function searchReservations(
     });
 }
 
-export async function getReservationById(id: string): Promise<Reservation> {
+export async function getReservationById(
+  id: string,
+  client: AxiosInstance
+): Promise<Reservation> {
   if (id == "-1") throw new Error("Invalid id.");
   return client.get(`/reservation/${id}`).then((response) => {
     if (response.status != 200) throw new Error(response.data.error);
@@ -60,19 +66,28 @@ export async function getReservationById(id: string): Promise<Reservation> {
   });
 }
 
-export async function updateReservation(r: Reservation): Promise<void> {
+export async function updateReservation(
+  r: Reservation,
+  client: AxiosInstance
+): Promise<void> {
   return client.post("/reservations/update", r).then((response) => {
     if (response.status != 200) throw new Error("Not updated.");
   });
 }
 
-export async function createReservation(r: Reservation): Promise<void> {
+export async function createReservation(
+  r: newReservation,
+  client: AxiosInstance
+): Promise<void> {
   return client.post("/reservations/add", r).then((response) => {
     if (response.status != 200) throw new Error("Not created.");
   });
 }
 
-export async function confirmReservation(id: number): Promise<void> {
+export async function confirmReservation(
+  id: number,
+  client: AxiosInstance
+): Promise<void> {
   return client
     .post("/reservations/confirm", { ID: id, confirmed: true })
     .then((response) => {
@@ -80,7 +95,10 @@ export async function confirmReservation(id: number): Promise<void> {
     });
 }
 
-export async function deleteReservation(id: number): Promise<void> {
+export async function deleteReservation(
+  id: number,
+  client: AxiosInstance
+): Promise<void> {
   return client.delete(`/reservations/delete/${id}`).then((response) => {
     if (response.status != 200) throw new Error("Not deleted.");
   });

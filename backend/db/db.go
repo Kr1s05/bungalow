@@ -1,6 +1,7 @@
 package db
 
 import (
+	"os"
 	"strings"
 	"time"
 
@@ -9,7 +10,16 @@ import (
 )
 
 func SetupPSQL() *DB {
-	dsn := "host=localhost user=bungalow_user password=1234 dbname=bungalow port=5432 sslmode=disable"
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	database := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
+	ssl := os.Getenv("DB_SSL")
+	if ssl == "" {
+		ssl = "disable"
+	}
+	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + database + " port=" + port + " sslmode=" + ssl + ""
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err.Error())

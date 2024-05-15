@@ -1,3 +1,4 @@
+import { ClientContext } from "@/api/AxiosClientProvider";
 import {
   Reservation,
   getReservationById,
@@ -7,15 +8,16 @@ import ReservationForm from "@/components/ReservationForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { reservationSchema } from "@/schemas/ReservationSchema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 
-export default function EditPage() {
+export default function EditPage(): JSX.Element {
+  const client = useContext(ClientContext);
   const { id } = useParams();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["edit"],
-    queryFn: () => getReservationById(id ? id : "-1"),
+    queryFn: () => getReservationById(id ? id : "-1", client),
     staleTime: Infinity,
   });
 
@@ -38,7 +40,7 @@ export default function EditPage() {
   const navigate = useNavigate();
   const updateMutation = useMutation({
     mutationKey: ["update"],
-    mutationFn: updateReservation,
+    mutationFn: (r: Reservation) => updateReservation(r, client),
   });
 
   if (isError)
@@ -55,7 +57,7 @@ export default function EditPage() {
       </main>
     );
 
-  if (data.ID == 0) return navigate("/");
+  if (data.ID == 0) navigate("/");
   const updateFn = (r: z.infer<typeof reservationSchema>) => {
     const reservation: Reservation = {
       ID: Number(id),

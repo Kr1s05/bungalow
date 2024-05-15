@@ -1,6 +1,13 @@
-version: "3.5"
-
 services:
+  frontend:
+    image: nginx:latest
+    container_name: fronted-container
+    ports:
+      - 5173:80
+    volumes:
+      - ./frontend/react/dist:/usr/share/nginx/html
+      - ./.dockerdata/nginx/nginx.conf:/etc/nginx/nginx.conf
+
   postgres:
     container_name: bungalow_postgres_container
     image: postgres
@@ -33,6 +40,26 @@ services:
       - bungalow
     restart: unless-stopped
 
+  backend:
+    container_name: bungalow_backend_container
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - bungalow
+    volumes:
+      - ./backend/reservatios:/bin/backend/reservations
+    environment:
+      - CLIENT_ID=bungalo-backend
+      - CLIENT_SECRET=aqzNczcvGJieSBvRhdNKCWbvgLgQzoBW
+      - INTROSPECT_ENDPOINT=https://keycloak.julylab.org/realms/master/protocol/openid-connect/token/introspect
+      - DB_HOST=bungalow_postgres_container
+      - DB_USER=bungalow_user
+      - DB_PASSWORD=1234
+      - DB_NAME=bungalow
+      - DB_PORT=5432
 networks:
   bungalow:
     driver: bridge

@@ -1,3 +1,4 @@
+import { ClientContext } from "@/api/AxiosClientProvider";
 import { getFirstYear } from "@/api/reservationsApi";
 import {
   Select,
@@ -6,12 +7,22 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-const first_year = await getFirstYear();
+import { useQuery } from "@tanstack/react-query";
+import { useContext } from "react";
 const current_year = new Date().getFullYear();
 export default function YearInput(props: {
   year: number;
   updateFunction: (year: number) => void;
 }) {
+  const client = useContext(ClientContext);
+  const { isLoading, data: first_year } = useQuery({
+    queryKey: ["first year"],
+    queryFn: () => getFirstYear(client),
+    staleTime: Infinity,
+  });
+  if (isLoading || !first_year) {
+    return <span>Loading...</span>;
+  }
   return (
     <Select
       onValueChange={(year) => {

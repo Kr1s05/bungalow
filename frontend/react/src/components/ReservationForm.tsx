@@ -29,8 +29,9 @@ import { CalendarIcon, CircleCheckBig, History } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Textarea } from "./ui/textarea";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useContext, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ClientContext } from "@/api/AxiosClientProvider";
 
 export default function ReservationForm(props: {
   reservation?: Reservation;
@@ -61,21 +62,34 @@ export default function ReservationForm(props: {
       form.setValue("note", props.reservation.Note);
       form.setValue("price", String(props.reservation.Price));
       form.setValue("confirmed", props.reservation.Confirmed);
+    } else {
+      form.setValue("firstName", "");
+      form.setValue("lastName", "");
+      form.setValue("phoneNumber", "");
+      form.setValue("email", "");
+      // @ts-ignore
+      form.setValue("startingDate", undefined);
+      // @ts-ignore
+      form.setValue("endingDate", undefined);
+      form.setValue("note", "");
+      form.setValue("price", "");
+      form.setValue("confirmed", false);
     }
   }, [props.reservation]);
 
+  const client = useContext(ClientContext);
+
   const [state, setState] = useState<{
     startingMonth: number;
-    length: number;
+    endingMonth: number;
     year: number;
   }>({
     startingMonth: form.getValues().startingDate
       ? form.getValues().startingDate.getMonth()
       : new Date().getMonth(),
-    length: form.getValues().startingDate
-      ? form.getValues().endingDate.getMonth() -
-        form.getValues().startingDate.getMonth()
-      : 1,
+    endingMonth: form.getValues().endingDate
+      ? form.getValues().endingDate.getMonth()
+      : new Date().getMonth(),
     year: form.getValues().startingDate
       ? form.getValues().startingDate.getFullYear()
       : new Date().getFullYear(),
@@ -87,14 +101,21 @@ export default function ReservationForm(props: {
     isError,
   } = useQuery({
     queryKey: ["reservations"],
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       return getReservationsForMultipleMonths(
         state.year,
         state.startingMonth + 1,
-        state.length + 1
+        state.endingMonth - state.startingMonth + 1,
+        signal,
+        client
       );
     },
   });
+
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["reservations"] });
+  }, [state.startingMonth, state.endingMonth]);
 
   if (isError) {
     return (
@@ -210,21 +231,25 @@ export default function ReservationForm(props: {
                   <Calendar
                     mode="single"
                     ISOWeek
+                    month={new Date(state.year, state.startingMonth, 1)}
                     onMonthChange={(month) => {
-                      setState({
+                      setState((prevState) => ({
+                        ...prevState,
+                        endingMonth:
+                          prevState.endingMonth == prevState.startingMonth
+                            ? month.getMonth()
+                            : prevState.endingMonth,
                         startingMonth: month.getMonth(),
-                        length: Math.abs(
-                          form.getValues().endingDate
-                            ? form.getValues().endingDate.getMonth() -
-                                month.getMonth()
-                            : new Date().getMonth() - month.getMonth()
-                        ),
                         year: month.getFullYear(),
-                      });
+                      }));
                     }}
                     showOutsideDays={false}
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      // @ts-ignore
+                      if (!date) form.setValue("endingDate", undefined);
+                      field.onChange(date);
+                    }}
                     disabled={(date: Date) => {
                       if (isReservedDate(date)) return true;
                       const end = form.getValues().endingDate;
@@ -248,6 +273,7 @@ export default function ReservationForm(props: {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
+                      disabled={!form.getValues().startingDate}
                       variant={"outline"}
                       className={cn(
                         "w-full pl-3 text-left font-normal sm:text-lg",
@@ -271,11 +297,11 @@ export default function ReservationForm(props: {
                     onMonthChange={(month) => {
                       setState((prevState) => ({
                         ...prevState,
-                        length:
-                          month.getMonth() -
-                          form.getValues().startingDate.getMonth(),
+                        endingMonth: month.getMonth(),
+                        year: month.getFullYear(),
                       }));
                     }}
+                    month={new Date(state.year, state.endingMonth, 1)}
                     ISOWeek
                     showOutsideDays={false}
                     selected={field.value}
