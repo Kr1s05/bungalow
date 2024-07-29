@@ -1,7 +1,7 @@
 package db
 
 import (
-	"reflect"
+	"os"
 	"strings"
 	"time"
 
@@ -10,7 +10,16 @@ import (
 )
 
 func SetupPSQL() *DB {
-	dsn := "host=localhost user=bungalow_user password=1234 dbname=bungalow port=5432 sslmode=disable"
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	database := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
+	ssl := os.Getenv("DB_SSL")
+	if ssl == "" {
+		ssl = "disable"
+	}
+	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + database + " port=" + port + " sslmode=" + ssl + ""
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err.Error())
@@ -58,6 +67,14 @@ func (db *DB) GetReservationsByMonth(year int, month time.Month) *[]Reservation 
 	return &reservations
 }
 
+func (db *DB) GetReservationsByYear(year int) *[]Reservation {
+	var reservations []Reservation
+	startOfYear := time.Date(year, 1, 1, 0, 0, 0, 0, time.Local)
+	endOfYear := startOfYear.AddDate(1, 0, 0).Add(-time.Nanosecond)
+	db.Where("starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?", startOfYear, endOfYear, startOfYear, endOfYear).Order("starting_date ASC").Find(&reservations)
+	return &reservations
+}
+
 func (db *DB) GetReservationsForPeriod(year int, month time.Month, length int) *[]Reservation {
 	var reservations []Reservation
 	startOfPeriod := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
@@ -76,32 +93,52 @@ func (db *DB) GetReservationByDate(year int, month time.Month, day int) *Reserva
 	return &reservation
 }
 
-func (db *DB) GetReservationsBySearchQuery(query *Keywords) *[]Reservation {
+func (db *DB) GetReservationsBySearchQuery(query *Keywords, month time.Month, year int) *[]Reservation {
 	var where string
 	var reservations []Reservation
+	var startDate, endDate time.Time
+	if month == -1 {
+		startDate = time.Date(year, 1, 1, 0, 0, 0, 0, time.Local)
+		endDate = startDate.AddDate(1, 0, 0).Add(-time.Nanosecond)
+	} else {
+		startDate = time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
+		endDate = startDate.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	}
+
 	if len(query.Name) > 0 {
-		where += "( LOWER(first_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%')"
+		where += "((LOWER(first_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%')"
 		if len(query.Name) > 1 {
 			where += " AND "
 		} else {
 			where += " OR "
 		}
 		where += "LOWER(last_name) SIMILAR TO LOWER('%(" + strings.Join(query.Name, "|") + ")%') )"
+		if len(query.Email) == 0 {
+			where += ")"
+		}
 	}
 	if len(query.Email) > 0 {
-		where += " OR email SIMILAR TO '%(" + strings.Join(query.Email, "|") + ")%'"
+		if len(query.Name) > 0 {
+			where += " OR"
+		} else {
+			where += "("
+		}
+		where += " email SIMILAR TO '%(" + strings.Join(query.Email, "|") + ")%')"
 	}
 	if len(query.Phone) > 0 {
-		where += " AND phone_number SIMILAR TO '%(" + strings.Join(query.Phone, "|") + ")%')"
+		if len(query.Email) > 0 || len(query.Name) > 0 {
+			where += " AND"
+		}
+		where += " phone_number SIMILAR TO '%(" + strings.Join(query.Phone, "|") + ")%'"
 	}
-
-	db.Debug().Where(where).Find(&reservations)
+	db.Debug().Where("(starting_date BETWEEN ? AND ? OR ending_date BETWEEN ? AND ?) AND ("+where+")", startDate, endDate, startDate, endDate).Order("starting_date ASC").Find(&reservations)
 	return &reservations
 }
 
-func (db *DB) getFirstYear() int {
+func (db *DB) GetFirstYear() int {
 	var year int
-	db.Raw("")
+	db.Raw("select extract(year from MIN(starting_date)) from reservations").First(&year)
+	return year
 }
 
 // create
@@ -112,25 +149,13 @@ func (db *DB) CreateReservation(reservation *Reservation) error {
 
 // update
 func (db *DB) UpdateReservation(reservation *Reservation) bool {
-	var oldReservation Reservation
-	db.First(&oldReservation, reservation.ID)
-	if oldReservation.ID != reservation.ID {
-		return false
-	}
-
-	oldValue := reflect.ValueOf(&oldReservation).Elem()
-	newValue := reflect.ValueOf(reservation).Elem()
-
-	for i := 0; i < oldValue.NumField(); i++ {
-		oldField := oldValue.Field(i)
-		newField := newValue.Field(i)
-		if newField.IsValid() && !newField.IsZero() {
-			oldField.Set(newField)
-		}
-	}
-
-	result := db.Save(&oldReservation)
+	result := db.Save(&reservation)
 	return result.RowsAffected == 1 && result.Error == nil
+}
+
+func (db *DB) SetConfirmed(id uint, confirmed bool) int64 {
+	result := db.Model(&Reservation{}).Where("id = ?", id).Update("confirmed", confirmed)
+	return result.RowsAffected
 }
 
 // delete

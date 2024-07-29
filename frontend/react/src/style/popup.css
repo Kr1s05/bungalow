@@ -1,0 +1,69 @@
+.my-popup-content {
+    margin: auto;
+    background: rgba(255, 255, 255, 0);
+    border: 0;
+    width: 100%;
+    padding: 5px;
+}
+
+.my-popup-arrow {
+    color: rgb(255, 255, 255);
+}
+
+[role='tooltip'].my-popup-content {
+    width: 200px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 0px 3px;
+}
+
+.my-popup-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+[data-popup='tooltip'].my-popup-overlay {
+    background: transparent;
+}
+
+
+.my-nested-popup-content {
+    margin: auto;
+    background: rgba(255, 255, 255, 0);
+    border: 0;
+    width: 70%;
+    height: fit-content;
+    padding: 5px;
+}
+
+.my-nested-popup-arrow {
+    color: rgb(255, 255, 255);
+}
+
+[role='tooltip'].my-nested-popup-content {
+    width: 200px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 0px 3px;
+}
+
+.my-nested-popup-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+[data-popup='tooltip'].my-nested-popup-overlay {
+    background: transparent;
+}
+
+@media only screen and (min-width: 1024px) {
+    .my-popup-content {
+        width: 50%;
+    }
+}
+
+@media only screen and (min-width: 860px) {
+    .my-nested-popup-content {
+        width: 30%;
+    }
+}
+
+@media only screen and (min-width: 1800px) {
+    .my-nested-popup-content {
+        width: 20%;
+    }
+}

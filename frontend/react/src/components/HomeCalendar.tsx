@@ -1,17 +1,20 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
 import {
   Reservation,
   getReservationsForMultipleMonths,
 } from "@/api/reservationsApi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { addDays, isAfter, isBefore } from "date-fns";
+import { addDays, isAfter, isBefore, isSameDay } from "date-fns";
 import { ActiveModifiers, SelectSingleEventHandler } from "react-day-picker";
-import ReservationCard from "./ReservationCard";
-import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css";
+import "@/style/popup.css";
+import ReservationPopup from "./ReservationPopup";
+import { getReservationForDate } from "@/util/reservations";
+import { ClientContext } from "@/api/AxiosClientProvider";
 
 export default function HomeCalendar() {
+  const client = useContext(ClientContext);
   const [state, setState] = useState<{
     currentMonth: Date;
     currentYear: number;
@@ -36,11 +39,13 @@ export default function HomeCalendar() {
     isLoading,
   } = useQuery({
     queryKey: ["reservations"],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       return await getReservationsForMultipleMonths(
         state.currentYear,
         state.currentMonth.getMonth() + 1,
-        6
+        6,
+        signal,
+        client
       );
     },
   });
@@ -50,6 +55,19 @@ export default function HomeCalendar() {
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["reservations"] });
   }, [state.currentMonth, queryClient]);
+
+  useEffect(() => {
+    const reservation = getReservationForDate(
+      state.cardInfo?.reservation.StartingDate,
+      reservations
+    );
+    const openModal = Boolean(reservation);
+    setState((prevState) => ({
+      ...prevState,
+      cardInfo: reservation ? { reservation } : undefined,
+      openModal,
+    }));
+  }, [reservations]);
 
   if (isError) {
     return (
@@ -66,6 +84,10 @@ export default function HomeCalendar() {
       color: "hsl(var(--primary))",
       border: "1px solid hsl(var(--secondary))",
     },
+    afterReservation: {
+      color: "hsl(var(--destructive))",
+      border: "1px solid hsl(var(--secondary))",
+    },
   };
 
   const handleMonthChange = (month: Date) => {
@@ -79,9 +101,18 @@ export default function HomeCalendar() {
   const isReservedDate = (date: Date) => {
     if (!reservations) return false;
     for (const reservation of reservations) {
-      if (isBefore(date, addDays(reservation.StartingDate, -1))) continue;
-      if (isAfter(date, addDays(reservation.EndingDate, -1))) continue;
+      if (isBefore(date, reservation.StartingDate)) continue;
+      if (isAfter(date, reservation.EndingDate)) continue;
       return true;
+    }
+    return false;
+  };
+
+  const isAfterReservation = (date: Date) => {
+    if (!reservations) return false;
+    if (isReservedDate(date)) return false;
+    for (const reservation of reservations) {
+      if (isSameDay(date, addDays(reservation.EndingDate, 1))) return true;
     }
     return false;
   };
@@ -89,36 +120,27 @@ export default function HomeCalendar() {
   const handleSelectionChange: SelectSingleEventHandler = (
     date,
     _,
-    modifiers: ActiveModifiers,
-    e
+    modifiers: ActiveModifiers
   ) => {
     let reservation: Reservation | undefined;
-    let position: { x: number; y: number };
     if (modifiers.reserved && date) {
-      reservation = getReservationForDate(date);
-      position = {
-        x: e.clientX,
-        y: e.clientY,
-      };
+      reservation = getReservationForDate(date, reservations);
     }
     setState((prevState) => ({
       ...prevState,
       selectedDate: modifiers.reserved ? date : undefined,
       cardInfo:
-        date && modifiers.reserved && reservation
-          ? { reservation, position }
-          : undefined,
+        date && modifiers.reserved && reservation ? { reservation } : undefined,
       openModal: Boolean(date && modifiers.reserved && reservation),
     }));
   };
 
-  const getReservationForDate = (date: Date): Reservation | undefined => {
-    if (!reservations) return;
-    for (const reservation of reservations) {
-      if (isBefore(date, addDays(reservation.StartingDate, -1))) continue;
-      if (isAfter(date, addDays(reservation.EndingDate, -1))) continue;
-      return reservation;
-    }
+  const closeModal = () => {
+    setState((prevState) => ({ ...prevState, openModal: false }));
+  };
+
+  const updateModal = () => {
+    queryClient.invalidateQueries({ queryKey: ["reservations"] });
   };
 
   return (
@@ -133,11 +155,14 @@ export default function HomeCalendar() {
         onMonthChange={handleMonthChange}
         month={state.currentMonth}
         numberOfMonths={6}
-        modifiers={{ reserved: isReservedDate }}
+        modifiers={{
+          reserved: isReservedDate,
+          afterReservation: isAfterReservation,
+        }}
         modifiersStyles={modifiersStyles}
         classNames={{
           month: "space-y-4 border rounded-3xl p-4 h-[395px]",
-          months: "grid gap-6 grid-rows-2 grid-cols-3",
+          months: "grid gap-3 xl:gap-6 grid-cols-1 lg:grid-cols-3",
           nav_button_next:
             "absolute end-0 hover:bg-primary hover:text-secondary",
           nav_button_previous:
@@ -146,28 +171,14 @@ export default function HomeCalendar() {
           cell: "h-9 w-9 text-center text-sm p-0 relative [&amp;:has([aria-selected].day-range-end)]:rounded-r-md [&amp;:has([aria-selected].day-outside)]:bg-accent/50 first:[&amp;:has([aria-selected])]:rounded-l-md last:[&amp;:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         }}
       />
-      <Popup
-        open={state.openModal}
-        onClose={() =>
-          setState((prevState) => ({
-            ...prevState,
-            openModal: !prevState.openModal,
-          }))
-        }
-        modal
-        closeOnDocumentClick
-        position={"center center"}
-        className="bg-transparent"
-        contentStyle={{ background: "rgba(0,0,0,0)", border: "0px" }}
-      >
-        <div className="bg-transparent">
-          {state.cardInfo ? (
-            <ReservationCard {...state.cardInfo.reservation} />
-          ) : (
-            ""
-          )}
-        </div>
-      </Popup>
+      {state.cardInfo && (
+        <ReservationPopup
+          reservation={state.cardInfo.reservation}
+          open={state.openModal}
+          closeFn={closeModal}
+          updateFn={updateModal}
+        />
+      )}
     </>
   );
 }
