@@ -23,18 +23,12 @@
     background: transparent;
 }
 
-@media only screen and (min-width: 1024px) {
-    .my-popup-content {
-        width: 50%;
-    }
-}
-
 
 .my-nested-popup-content {
     margin: auto;
     background: rgba(255, 255, 255, 0);
     border: 0;
-    width: 20%;
+    width: 70%;
     height: fit-content;
     padding: 5px;
 }
@@ -54,4 +48,22 @@
 
 [data-popup='tooltip'].my-nested-popup-overlay {
     background: transparent;
+}
+
+@media only screen and (min-width: 1024px) {
+    .my-popup-content {
+        width: 50%;
+    }
+}
+
+@media only screen and (min-width: 860px) {
+    .my-nested-popup-content {
+        width: 30%;
+    }
+}
+
+@media only screen and (min-width: 1800px) {
+    .my-nested-popup-content {
+        width: 20%;
+    }
 }

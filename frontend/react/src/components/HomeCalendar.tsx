@@ -5,7 +5,7 @@ import {
   getReservationsForMultipleMonths,
 } from "@/api/reservationsApi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { isAfter, isBefore } from "date-fns";
+import { addDays, isAfter, isBefore, isSameDay } from "date-fns";
 import { ActiveModifiers, SelectSingleEventHandler } from "react-day-picker";
 import "reactjs-popup/dist/index.css";
 import "@/style/popup.css";
@@ -84,6 +84,10 @@ export default function HomeCalendar() {
       color: "hsl(var(--primary))",
       border: "1px solid hsl(var(--secondary))",
     },
+    afterReservation: {
+      color: "hsl(var(--destructive))",
+      border: "1px solid hsl(var(--secondary))",
+    },
   };
 
   const handleMonthChange = (month: Date) => {
@@ -100,6 +104,15 @@ export default function HomeCalendar() {
       if (isBefore(date, reservation.StartingDate)) continue;
       if (isAfter(date, reservation.EndingDate)) continue;
       return true;
+    }
+    return false;
+  };
+
+  const isAfterReservation = (date: Date) => {
+    if (!reservations) return false;
+    if (isReservedDate(date)) return false;
+    for (const reservation of reservations) {
+      if (isSameDay(date, addDays(reservation.EndingDate, 1))) return true;
     }
     return false;
   };
@@ -142,7 +155,10 @@ export default function HomeCalendar() {
         onMonthChange={handleMonthChange}
         month={state.currentMonth}
         numberOfMonths={6}
-        modifiers={{ reserved: isReservedDate }}
+        modifiers={{
+          reserved: isReservedDate,
+          afterReservation: isAfterReservation,
+        }}
         modifiersStyles={modifiersStyles}
         classNames={{
           month: "space-y-4 border rounded-3xl p-4 h-[395px]",

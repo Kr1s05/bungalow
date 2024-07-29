@@ -16,10 +16,10 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"https://bungalo.julylab.org"},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS", "DELETE"},
 		AllowHeaders:     []string{"Origin", "content-type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
+		ExposeHeaders:    []string{"Content-Length", "access-control-allow-origin"},
 		AllowCredentials: true,
 	}))
 

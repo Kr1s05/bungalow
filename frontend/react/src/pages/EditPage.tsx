@@ -6,6 +6,7 @@ import {
 } from "@/api/reservationsApi";
 import ReservationForm from "@/components/ReservationForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
 import { reservationSchema } from "@/schemas/ReservationSchema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useContext, useEffect, useState } from "react";
@@ -37,10 +38,19 @@ export default function EditPage(): JSX.Element {
     }
   }, [data]);
 
+  const { toast } = useToast();
+
   const navigate = useNavigate();
   const updateMutation = useMutation({
     mutationKey: ["update"],
     mutationFn: (r: Reservation) => updateReservation(r, client),
+    onSuccess: () => {
+      toast({
+        title: "Successfuly edited.",
+        className: "text-center w-fit",
+        duration: 1000,
+      });
+    },
   });
 
   if (isError)
@@ -77,7 +87,7 @@ export default function EditPage(): JSX.Element {
   return (
     <main className="h-full w-full p-4 flex flex-col items-center">
       <ScrollArea
-        className="h-[calc(100vh-106px)] lg:w-3/4 2xl:w-1/2"
+        className="h-[calc(100vh-185px)] lg:w-3/4 2xl:w-1/2"
         viewPortClasses="md:flex items-center"
       >
         <ReservationForm reservation={reservation} updateFunction={updateFn} />

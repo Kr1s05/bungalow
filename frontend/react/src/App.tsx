@@ -10,25 +10,31 @@ import { AxiosClientProvider } from "./api/AxiosClientProvider";
 function App() {
   const navigate = useNavigate();
   return (
-    <AuthProvider
-      authority="https://keycloak.julylab.org/realms/master"
-      clientId="bungalo-frontend"
-      redirectUri="http://localhost:5173"
-      onSignIn={() => {
-        navigate("/calendar");
-      }}
-    >
-      <AxiosClientProvider>
-        <Routes>
-          <Route path="/" Component={SiteLayout}>
-            <Route path="/calendar" Component={HomePage} />
-            <Route path="/search" Component={SearchPage} />
-            <Route path="/add" Component={AddPage} />
-            <Route path="/edit/:id" Component={EditPage} />
-          </Route>
-        </Routes>
-      </AxiosClientProvider>
-    </AuthProvider>
+    <Routes>
+      <Route
+        path="/private"
+        element={
+          <AuthProvider
+            authority="https://keycloak.julylab.org/realms/master"
+            clientId="bungalo-frontend"
+            redirectUri="https://bungalo.julylab.org/private"
+            postLogoutRedirectUri="https://bungalo.julylab.org/"
+            onSignIn={() => {
+              navigate("/private/calendar");
+            }}
+          >
+            <AxiosClientProvider>
+              <SiteLayout />
+            </AxiosClientProvider>
+          </AuthProvider>
+        }
+      >
+        <Route path="/private/calendar" Component={HomePage} />
+        <Route path="/private/search" Component={SearchPage} />
+        <Route path="/private/add" Component={AddPage} />
+        <Route path="/private/edit/:id" Component={EditPage} />
+      </Route>
+    </Routes>
   );
 }
 

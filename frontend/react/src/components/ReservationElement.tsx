@@ -7,7 +7,7 @@ export default function ReservationElement(props: {
 }) {
   return (
     <div onClick={() => props.modalFn(props.reservation)}>
-      <div className="relative w-100 h-fit border border-primary shadow-md shadow-secondary rounded-md p-2 grid grid-cols-2 my-2 md:hidden">
+      <div className="relative w-100 h-fit border border-primary shadow-md shadow-secondary rounded-md p-2 grid grid-cols-2 my-2 md:hidden hover:border-secondary">
         <span>
           {props.reservation.FirstName + " " + props.reservation.LastName}
         </span>
@@ -26,7 +26,7 @@ export default function ReservationElement(props: {
           )}
         </div>
       </div>
-      <div className="hidden md:grid grid-cols-7 w-100 h-fit border border-primary shadow-md shadow-secondary rounded-md p-2 my-3 leading-7 xl:leading-8">
+      <div className="hidden md:grid grid-cols-7 w-100 h-fit border border-primary shadow-md shadow-secondary rounded-md p-2 my-3 leading-7 xl:leading-8 hover:border-secondary">
         <div className="flex flex-col">
           <span>Name: </span>
           <span>Email: </span>

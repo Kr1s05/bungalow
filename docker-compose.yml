@@ -49,8 +49,6 @@ services:
       - 8080:8080
     networks:
       - bungalow
-    volumes:
-      - ./backend/reservatios:/bin/backend/reservations
     environment:
       - CLIENT_ID=bungalo-backend
       - CLIENT_SECRET=aqzNczcvGJieSBvRhdNKCWbvgLgQzoBW

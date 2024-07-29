@@ -7,7 +7,7 @@ export const ClientContext = createContext<AxiosInstance>(undefined);
 export function AxiosClientProvider(props: PropsWithChildren) {
   const auth = useAuth();
   const client = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: "https://bungalo-backend.julylab.org",
     withCredentials: true,
   });
   client.defaults.headers.common.Authorization =

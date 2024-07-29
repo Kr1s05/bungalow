@@ -13,6 +13,7 @@ import { CircleCheckBig, History, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import Popup from "reactjs-popup";
 import { useState } from "react";
+import "@/style/popup.css";
 
 export default function ReservationCard(
   reservation: Reservation & { className?: string } & {
@@ -56,10 +57,11 @@ export default function ReservationCard(
             <span>{reservation.StartingDate.toLocaleDateString()}</span>
             <span>{reservation.EndingDate.toLocaleDateString()}</span>
             <span className="hidden md:block">
-              {differenceInCalendarDays(
-                reservation.EndingDate,
-                reservation.StartingDate
-              )}
+              {1 +
+                differenceInCalendarDays(
+                  reservation.EndingDate,
+                  reservation.StartingDate
+                )}
             </span>
             <span>{reservation.Price + " лв"}</span>
             <span>{reservation.Note}</span>
@@ -82,7 +84,7 @@ export default function ReservationCard(
         >
           {reservation.Confirmed ? "Confirmed" : "Confirm"}
         </Button>
-        <Link to={`/edit/${reservation.ID}`} className="w-1/4">
+        <Link to={`/private/edit/${reservation.ID}`} className="w-1/4">
           <Button className="w-full" variant={"secondary"}>
             Edit
           </Button>
