@@ -1,13 +1,14 @@
 import axios, { AxiosInstance } from "axios";
 import { useAuth } from "oidc-react";
 import { PropsWithChildren, createContext } from "react";
+import { config } from "node-config-ts";
 
-// @ts-ignore
+// @ts-expect-error context value starts as undefined
 export const ClientContext = createContext<AxiosInstance>(undefined);
 export function AxiosClientProvider(props: PropsWithChildren) {
   const auth = useAuth();
   const client = axios.create({
-    baseURL: "https://bungalo-backend.julylab.org",
+    baseURL: config.backendUrl,
     withCredentials: true,
   });
   client.defaults.headers.common.Authorization =

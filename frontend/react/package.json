@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "node-config-ts",
     "dev": "vite --host",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -29,6 +30,7 @@
     "cmdk": "0.2.1",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.359.0",
+    "node-config-ts": "^3.3.1",
     "oidc-react": "^3.2.2",
     "react": "^18.2.0",
     "react-day-picker": "^8.10.0",
@@ -56,7 +58,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.36",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.2.2",
+    "typescript": "^5.5.4",
     "vite": "^5.1.6"
   }
 }

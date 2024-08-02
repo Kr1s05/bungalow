@@ -6,6 +6,7 @@ import AddPage from "./pages/AddPage";
 import EditPage from "./pages/EditPage";
 import { AuthProvider } from "oidc-react";
 import { AxiosClientProvider } from "./api/AxiosClientProvider";
+import { config } from "node-config-ts";
 
 function App() {
   const navigate = useNavigate();
@@ -15,10 +16,10 @@ function App() {
         path="/private"
         element={
           <AuthProvider
-            authority="https://keycloak.julylab.org/realms/master"
-            clientId="bungalo-frontend"
-            redirectUri="https://bungalo.julylab.org/private"
-            postLogoutRedirectUri="https://bungalo.julylab.org/"
+            authority={config.authority}
+            clientId={config.clientId}
+            redirectUri={config.redirectUri}
+            postLogoutRedirectUri={config.postLogoutRedirectUri}
             onSignIn={() => {
               navigate("/private/calendar");
             }}
