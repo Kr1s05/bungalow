@@ -1,6 +1,4 @@
 {
-    "authority":"https://keycloak.julylab.org/realms/master",
-    "clientId":"bungalo-frontend",
     "redirectUri":"https://bungalo.julylab.org/private",
     "postLogoutRedirectUri":"https://bungalo.julylab.org/",
     "backendUrl":"https://bungalo-backend.julylab.org"
